@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Dashboard</title>
+</head>
+<body>
+    <h1>Candidate Dashboard</h1>
+    <form method="POST" enctype="multipart/form-data" action="/upload"> <!-- Ensure correct action attribute -->
+        <input type="file" name="resumes" accept=".pdf"> <!-- Correct name attribute to match in app.py -->
+        <button type="submit">Upload Resume</button>
+    </form>
+</body>
+</html>

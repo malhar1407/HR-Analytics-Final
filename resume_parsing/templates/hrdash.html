@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">HR Dashboard</h1>
+        <!-- Add Bootstrap table styling -->
+        <table class="table table-dark table-striped" border="1" id="resumesTable">
+            <thead>
+                <tr>
+                    <th>PDF Name</th>
+                    <th>Name</th>
+                    <th>Contact Info</th>
+                    <th>Email</th>
+                    <th>Skills</th>
+                    <th>Upload Date</th> <!-- New column for upload date-time stamp -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for resume in resumes %}
+                <tr>
+                    <td>{{ resume.pdf_name }}</td>
+                    <td>{{ resume.name }}</td>
+                    <td>{{ resume.contact_info }}</td>
+                    <td>{{ resume.email }}</td>
+                    <td>
+                        <ul>
+                            {% for skill in resume.skills %}
+                            <li>{{ skill }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ resume.upload_date }}</td> <!-- Display upload date-time stamp -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- jQuery (optional) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</body>
+</html>
