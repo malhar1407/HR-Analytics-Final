@@ -5,5 +5,10 @@ flask
 pymongo
 gensim
 fitz
+pymupdf
+DateTime
+regex
+scipy==1.12.0
+PyPDF2==2.0.0
 
 -e .

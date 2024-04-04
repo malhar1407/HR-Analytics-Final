@@ -53,5 +53,5 @@ def hr_dashboard():
     return render_template('hrdash.html', resumes=resumes)
 
 if __name__ == '__main__':
-    app.config['UPLOAD_FOLDER'] = r'C:\Users\kahan.jash\Desktop\check\uploads'  # Define upload folder path
+    app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path
     app.run(debug=True)

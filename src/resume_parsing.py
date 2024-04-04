@@ -139,7 +139,7 @@ from datetime import datetime
 import re
 
 # Preprocess the Skills Data
-skills_csv_path = r"C:\Users\kahan.jash\Desktop\check\skills2.csv"  # Path to your skills dataset CSV file
+skills_csv_path = r"D:\HR-Analytics-Final\src\skills2.csv"  # Path to your skills dataset CSV file
 skills_df = pd.read_csv(skills_csv_path)
 skills_set = set(skills_df["SKILLS"].str.lower())  # Convert to lowercase and create a set for faster lookup
 skills_df.drop_duplicates(inplace=True)     # Remove duplicate rows
