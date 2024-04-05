@@ -8,8 +8,17 @@
 <body>
     <h1>Candidate Dashboard</h1>
     <form method="POST" enctype="multipart/form-data" action="/upload"> <!-- Ensure correct action attribute -->
+        
+        <label for="resumes">Upload Resume (PDF only): </label>
         <input type="file" name="resumes" accept=".pdf"> <!-- Correct name attribute to match in app.py -->
-        <button type="submit">Upload Resume</button>
+        <br/>
+
+        <label for="cover_letter">Upload Cover Letter (PDF only):</label>
+        <input type="file" name="cover_letter" id="cover_letter" accept=".pdf"> <!-- Input field for cover letter -->
+        <br>
+
+        <button type="submit">Submit</button>
+        
     </form>
 </body>
 </html>

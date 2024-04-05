@@ -1,0 +1,22 @@
+pandas
+numpy 
+seaborn
+flask
+pymongo
+gensim
+fitz
+pymupdf
+DateTime
+regex
+scipy==1.12.0
+PyPDF2==2.0.0
+sentence-transformers
+nltk
+scikit-learn==1.2.2
+torch
+
+
+
+
+
+#-e .
