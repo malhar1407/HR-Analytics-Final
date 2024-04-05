@@ -239,6 +239,7 @@ def extract_info_from_resume(pdf_path):
 # Main function to parse resume and extract information
 def parse_resume(pdf_path):
     # Parse resume and extract relevant information
+    print('Reached parse_resume')
     pdf_name, name, contact_info, email, skills, upload_date = extract_info_from_resume(pdf_path)
 
     # Get the current date and time as the upload date
