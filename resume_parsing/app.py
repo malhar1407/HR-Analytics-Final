@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from pymongo import MongoClient
+from pymongo import MongoClient # type: ignore
 import os
 from resume_parsing import parse_resume
 from datetime import datetime
@@ -53,5 +53,5 @@ def hr_dashboard():
     return render_template('hrdash.html', resumes=resumes)
 
 if __name__ == '__main__':
-    app.config['UPLOAD_FOLDER'] = r'C:\Users\kahan.jash\Desktop\check\uploads'  # Define upload folder path
+    app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\resume_parsing\uploads'  # Define upload folder path
     app.run(debug=True)
