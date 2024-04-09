@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from pymongo import MongoClient
 import os
+import subprocess
 from resume_parsing import parse_resume
 from Cover_Letter import final_cover_letter
 from datetime import datetime
@@ -65,5 +66,6 @@ def hr_dashboard():
     return render_template('hrdash.html', resumes=resumes)
 
 if __name__ == '__main__':
+    streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path
     app.run(debug=True)

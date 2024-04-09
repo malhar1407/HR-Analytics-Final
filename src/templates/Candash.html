@@ -153,6 +153,44 @@ p {
 
 .dropdown:hover .dropbtn {
     background-color: #555;}
+.iframe-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background-color: #f2f2f2;
+    overflow: hidden;
+    transition: width 0.3s ease;
+    z-index: 999;
+}
+
+  /* CSS styling for iframe */
+#myIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+  /* CSS styling for button */
+.my-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: yellow;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+  /* CSS styling for button hover effect */
+.my-button:hover {
+    background-color: #ffff99;
+}
         </style>
     </head>
     
@@ -197,7 +235,24 @@ p {
                 </div>
             </div>
 
-        <iframe src="http://localhost:8501" width="100%" height="600px"></iframe>
+            <div class="iframe-container">
+                <!-- Embedded iframe -->
+                <iframe id="myIframe" src="http://localhost:8501" frameborder="0"></iframe>
+              </div>
+              
+              <!-- Button to toggle iframe -->
+              <button class="my-button" onclick="toggleIframe()">Chat</button>
+              
+              <script>
+                function toggleIframe() {
+                  var iframeContainer = document.querySelector('.iframe-container');
+                  if (iframeContainer.style.width === '0%') {
+                    iframeContainer.style.width = '50%';
+                  } else {
+                    iframeContainer.style.width = '0%';
+                  }
+                }
+              </script>
 
     </body>
 </html>
