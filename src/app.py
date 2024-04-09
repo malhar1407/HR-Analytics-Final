@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file
 from pymongo import MongoClient
 import os
+import subprocess
 from resume_parsing import parse_resume
 from Cover_Letter import final_cover_letter
 from datetime import datetime
@@ -38,13 +39,11 @@ def get_user_password(user_id):
 
 
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 # MongoDB connection
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['Project']  # Replace 'Project' with your actual database name
 resume_collection = db['resume']  # Collection to store resume data
-login_collection = db['Login_Details'] # Collection to store login data
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
@@ -233,5 +232,6 @@ def change_password_page():
         return render_template('change_password.html')
 
 if __name__ == '__main__':
+    streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path
     app.run(debug=True)
