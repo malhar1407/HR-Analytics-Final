@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from pymongo import MongoClient
 import os
 from resume_parsing import parse_resume
@@ -6,11 +6,13 @@ from Cover_Letter import final_cover_letter
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 # MongoDB connection
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['Project']  # Replace 'Project' with your actual database name
 resume_collection = db['resume']  # Collection to store resume data
+login_collection = db['Login_Details'] # Collection to store login data
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
@@ -56,6 +58,40 @@ def upload_files():
 @app.route('/candidate')
 def candidate_dashboard():
     return render_template('Candash.html')
+
+#Route for login page
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+
+
+@app.route('/validate', methods=['POST'])
+def validate():
+    print('Reached validation')
+    if request.method == 'POST':
+        candidate_id = int(request.form['candidate-id'])
+        password = request.form['password']
+
+        print(type(candidate_id))
+        print(password)
+        login_data = login_collection.find_one({'id': candidate_id, 'Password': password})
+        print(login_data)
+
+        if login_data:
+            designation = login_data.get('Designation')
+            print(designation)
+
+            if(designation == 'HR'):
+                return redirect(url_for('hr_dashboard'))
+            elif(designation == 'Candidate'):
+                return redirect(url_for('candidate_dashboard'))
+        else:
+            flash('Invalid Login Credentials. Please try again')
+        
+        return redirect(url_for('login'))
+        
+
 
 # Route for HR dashboard
 @app.route('/hr')
