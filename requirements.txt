@@ -14,8 +14,7 @@ sentence-transformers
 nltk
 scikit-learn==1.2.2
 torch
-
-
+frontend
 
 
 

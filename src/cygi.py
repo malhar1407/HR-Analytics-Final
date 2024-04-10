@@ -180,10 +180,10 @@ def main():
         "Contact Details": ["Contact Details for Queries"]
     }
 
-    if 'stage' not in st.session_state:
-        st.session_state.stage = 'category'
+    # Initialize stage in session state
+    stage = st.session_state.get('stage', 'category')
 
-    if st.session_state.stage == 'category':
+    if stage == 'category':
         st.write("Please select a category:")
         col1, col2, col3 = st.columns(3)
         for i, category in enumerate(categories):
@@ -192,7 +192,7 @@ def main():
                 st.session_state.selected_category = category
                 st.session_state.stage = 'question'
 
-    elif st.session_state.stage == 'question':
+    elif stage == 'question':
         selected_category = st.session_state.selected_category
         st.subheader(selected_category)
         st.write("Please select a question:")
@@ -206,8 +206,7 @@ def main():
         if st.button("Back"):
             st.session_state.stage = 'category'
 
-
-    elif st.session_state.stage == 'response':
+    elif stage == 'response':
         selected_category = st.session_state.selected_category
         selected_question = st.session_state.selected_question
         st.subheader(selected_category)
@@ -223,3 +222,5 @@ def main():
 # Call the main function to run the app
 if __name__ == "__main__":
     main()
+
+#streamlit run your_script.py --server.enableCORS false

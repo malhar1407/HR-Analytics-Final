@@ -1,24 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Dashboard</title>
-</head>
-<body>
-    <h1>Candidate Dashboard</h1>
-    <form method="POST" enctype="multipart/form-data" action="/upload"> <!-- Ensure correct action attribute -->
-        
-        <label for="resumes">Upload Resume (PDF only): </label>
-        <input type="file" name="resumes" accept=".pdf"> <!-- Correct name attribute to match in app.py -->
-        <br/>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
+        <title>Applicant Dashboard</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+       <!-- <link rel="stylesheet" href="style.css" type="text/css"/> -->
+        <style>
+            body {
+    font-family: Arial, sans-serif;
+    background-color: #eb9b34;
+    margin: 0;
+    padding: 0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color:  #f5f5dc ;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+    .dashboard-section {
+        margin-bottom: 20px;
+    }
+    .section-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+        text-align: center;
+        color: #444;
+    }
+    .meetings, .documents, .status {
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    p {
+        margin: 10px 0;
+        line-height: 1.5;
+    }
+    .upload-options {
+        margin-bottom: 10px;
+    }
+    .upload-button {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    .upload-button:hover {
+        background-color: #45a049;
+    }
+    /* .submit-button {
+        display: block;
+        margin: 20px auto;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    .submit-button:hover {
+        background-image: linear-gradient(to right, #66BB6A 0%, #43A047 100%);
 
-        <label for="cover_letter">Upload Cover Letter (PDF only):</label>
-        <input type="file" name="cover_letter" id="cover_letter" accept=".pdf"> <!-- Input field for cover letter -->
-        <br>
+    }
+    .submit-button:active {
+        background-image: linear-gradient(to right, #388E3C 0%, #2E7D32 100%);
+    } */
+    .submit-button {
+            display: block;
+            margin: 20px auto;
+            background-image: linear-gradient(to right, #4c82af 20%, #4a8bc3 80%);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: 1px solid #3E8E41;
+            border-radius: 5px;
+            font-family: 'Roboto', sans-serif;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+            }
 
-        <button type="submit">Submit</button>
+
+
+
+    .submit-button:hover {
+            background-color: #577c9c;
+            border-color: #38803B;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+
+
+
+
+    .submit-button::after {
+            content: "\f058"; /* Font Awesome for checkmark icon */
+            font-family: "Font Awesome 5 Free";
+            font-size: 16px;
+            margin-left: 10px;
+            }
+    .custom-box {
+        background-color: #001F3F; /* Blue background color */
+        color:#ffffff; /* White text color */
+        padding: 10px; /* Padding around the text */
+        border-radius: 5px; /* Rounded corners */
+        text-align: center; /* Center-align text */}
+
+
+    .task-bar {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;}
+
+    .task-bar-logo {
+        font-size: 24px;
+        margin-right: 10px;}
+
+    .dropdown {
+        position: relative;
+        display: inline-block;}
+
+    .dropdown-content {
+        display: none;
+        position: relative;
+        background-color: #f9f9f9;
+        min-width: 120px;
+        z-index: 1;
+        border-radius: 5px;}
+
+    .dropdown-content a {
+        color: #333;
+        padding: 10px;
+        text-decoration: none;
+        display: block;}
+
+    .dropdown-content a:hover {
+        background-color: #ddd;}
+
+    .dropdown:hover .dropdown-content {
+        display: block;}
+
+    .dropdown:hover .dropbtn {
+        background-color: #555;}
+
+    .task-bar {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    .task-bar-logo {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+    .task-bar-buttons {
+            display: flex;
+            align-items: center;
+        }
+    .task-bar-buttons button {
+            margin-left: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+    .task-bar-buttons button:hover {
+            background-color: #45a049;
+        }
+    .iframe-container {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 50%;
+        height: 100%;
+        background-color: #f2f2f2;
+        overflow: hidden;
+        transition: width 0.3s ease;
+        z-index: 999;
+    }
+
+    /* CSS styling for iframe */
+    #myIframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* CSS styling for button */
+    .my-button {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: yellow;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        z-index: 1000;
+    }
+
+    /* CSS styling for button hover effect */
+    .my-button:hover {
+        background-color: #ffff99;
+    }
+        </style>
+    </head>
+    
+    <body>
+        <!-- Taskbar -->
+        <div class="task-bar">
+            <div class="task-bar-logo">{{ session['name'] }}</div>
+            <div class="task-bar-buttons">
+                <!-- Change Password Button -->
+                <form method="POST" action="/change_password_page">
+                    <button type="submit">Change Password</button>
+                </form>
+                <!-- Logout Button -->
+                <form method="POST" action="/logout">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+
+
+        <div class="container">
+
+            <h2 class="custom-box">Welcome to Your Dashboard</h2>
+
+            <div class="dashboard-section">
+                <h3 class="section-title">Application Status</h3>
+                <div class="status">
+                    Your application status will be displayed here.
+
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3 class="section-title">Schedule Meets</h3>
+                <div class="meetings">
+                    Your scheduled meets will be displayed here.
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3 class="section-title">Upload Documents</h3>
+                <div class="documents">
+                    <p>Please upload your resume and cover letter</p>
+                    <br>
+                    <p>The format of the files must be pdf</p>
+                    <form method="POST" enctype="multipart/form-data" action="/upload"> <!-- Ensure correct action attribute -->
         
-    </form>
-</body>
+                        <label for="resumes">Upload Resume (PDF only): </label>
+                        <input type="file" name="resumes" accept=".pdf"> <!-- Correct name attribute to match in app.py -->
+                        <br/>
+                
+                        <label for="cover_letter">Upload Cover Letter (PDF only):</label>
+                        <input type="file" name="cover_letter" id="cover_letter" accept=".pdf"> <!-- Input field for cover letter -->
+                        <br>
+                
+                        <button type="submit">Submit</button>
+                        
+                    </form>
+                </div>
+            </div>
+
+            <div class="iframe-container">
+                <!-- Embedded iframe -->
+                <iframe id="myIframe" src="http://localhost:8501" frameborder="0"></iframe>
+              </div>
+              
+              <!-- Button to toggle iframe -->
+              <button class="my-button" onclick="toggleIframe()">Chat</button>
+              
+              <script>
+                function toggleIframe() {
+                  var iframeContainer = document.querySelector('.iframe-container');
+                  if (iframeContainer.style.width === '0%') {
+                    iframeContainer.style.width = '50%';
+                  } else {
+                    iframeContainer.style.width = '0%';
+                  }
+                }
+              </script>
+
+    </body>
 </html>
