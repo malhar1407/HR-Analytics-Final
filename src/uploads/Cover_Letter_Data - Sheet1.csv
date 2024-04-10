@@ -1,0 +1,191 @@
+,Without Preprocessing,,With Preprocessing,,
+Cover Letter,Cosine Similarity,Normalized Cosine Similarity,Cosine Similarity,Normalized Cosine Similarity,"Manual Assessment
+(Good/Bad)"
+"Dear Sir/Madam, 
+
+I am writing in response to the Accounting Assistant position advertised on SEEK.com.au on 17 February 2023. This looks like a very good fit for my previous accounting experience and I am keen to join your company. 
+
+I am a seasoned accounting professional with high aptitude across all areas of the accounting scope. I am skilled in accounts payable and invoicing and can excel at tasks such as bookkeeping, reporting and tax. 
+
+Throughout my career, I have had exceptional results as an Accountant in Malaysia. I am goal-oriented and work well in teams. I am a hard-working team player and can deliver month-end reporting results on time for your organisation. 
+
+Enclosed, you will find my Resume with more detail on my accounting skills and value that I can bring to your esteemed company. 
+
+I can meet you for an interview and I am keen to discuss the position with you soon.
+
+Yours sincerely, 
+Job Seeker",0.423,0.7301,0.3738,0.7095,Bad
+"Dear Hiring Manager,
+
+I am writing to express my interest in the Data Scientist position at Infosys, as advertised. With two years of hands-on experience in data analysis and machine learning techniques gained at Cygnet Digital, I am excited about the opportunity to contribute to your team's success.
+
+During my tenure at Cygnet Digital, I consistently leveraged data-driven insights to drive business value and improve decision-making processes. My projects included developing predictive models to optimize marketing campaigns, enhance customer segmentation strategies, and identify opportunities for revenue growth. I am particularly proud of my work in showcasing digital transformation by implementing innovative solutions that streamlined operations and enhanced efficiency.
+
+My commitment to integrity, teamwork, and simplicity has been demonstrated through my collaborative approach to problem-solving and my ability to communicate complex technical concepts effectively to diverse stakeholders. I am confident that my strong interpersonal skills, coupled with my passion for innovation and continuous learning, make me a valuable addition to your team.
+
+Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experiences align with the goals of Infosys. Please find my resume attached for your review.
+
+Sincerely,
+Malhar Shinde",0.5007,0.6972,0.4306,0.6078,Good
+"Dear Hiring Manager,
+
+I am writing to apply for the Data Scientist position at Infosys, as advertised. With a solid foundation in data analysis and machine learning techniques developed during my two years at Cygnet Digital, I am eager to bring my expertise to your innovative team.
+
+At Cygnet Digital, I played a pivotal role in driving business value by delivering actionable insights through data analysis. My projects ranged from developing predictive models to identify market trends and customer behaviors to optimizing data pipelines for efficiency and accuracy. My work consistently showcased my commitment to integrity, innovation, and a results-oriented mindset.
+
+In addition to my technical skills, I possess strong interpersonal skills and a collaborative spirit that enable me to thrive in team environments. I am known for my ability to foster trust and build strong relationships with colleagues and stakeholders. My experience in working on cross-functional teams and my track record of meeting deadlines under pressure make me well-equipped to excel in a fast-paced environment like yours.
+
+Thank you for considering my application. I am excited about the opportunity to contribute to the success of Infosys and am eager to discuss how my skills and experiences align with your needs. Please find my resume attached for your review.
+
+Warm regards,
+Malhar Shinde
+
+",0.5366,0.7843,0.4977,0.7909,Good
+"Dear Hiring Manager,
+
+I am writing to express my interest in the Data Scientist position at Infosys. With two years of experience in data analysis and machine learning techniques gained at Cygnet Digital, I am excited about the opportunity to contribute to your innovative team.
+
+Throughout my time at Cygnet Digital, I have had the privilege of working on projects that allowed me to demonstrate my ability to add value in various domains. From leveraging data to optimize business processes and enhance customer experiences to collaborating with cross-functional teams to develop innovative solutions, my work has consistently reflected my dedication to driving results and making a positive impact.
+
+I am particularly drawn to Infosys because of its reputation for fostering a culture of integrity, innovation, and collaboration. I am eager to join a team of like-minded professionals who share my passion for leveraging data to solve complex problems and drive strategic decision-making. My strong communication skills, coupled with my ability to thrive in fast-paced environments, make me confident in my ability to excel in this role.
+
+Thank you for considering my application. I am excited about the opportunity to discuss how my skills and experiences align with the needs of Infosys. Please find my resume attached for your review.
+
+Warm regards,
+Malhar Shinde",0.489,0.7539,0.4459,0.7501,Good
+"Dear Hiring Manager,
+
+I am writing to apply for the Data Scientist position at Infosys, as advertised. With two years of experience in data analysis and machine learning techniques, I am excited about the opportunity to leverage my skills and contribute to the success of your team.
+
+During my tenure at Cygnet Digital, I had the opportunity to work on a wide range of projects that allowed me to demonstrate my ability to add value in diverse contexts. From developing predictive models to optimize business processes to analyzing customer behavior to drive targeted marketing strategies, my work consistently reflected my commitment to delivering actionable insights and driving business impact.
+
+I am particularly impressed by Infosys's commitment to innovation and its dedication to fostering a culture of continuous learning and growth. I am eager to join a team of passionate professionals who share my enthusiasm for leveraging data to solve complex problems and drive strategic decision-making. With my strong analytical skills, attention to detail, and passion for innovation, I am confident that I can make a meaningful contribution to your team.
+
+Thank you for considering my application. I am excited about the opportunity to discuss how my skills and experiences align with the needs of Infosys. Please find my resume attached for your review.
+
+Best regards,
+Malhar Shinde",0.4743,0.7776,0.4546,0.6908,Good
+"Dear Hiring Manager,
+
+I am writing to apply for the Data Scientist position at TCS. With two years of experience in data analysis and machine learning techniques, I am confident in my ability to contribute effectively to your team.
+
+Throughout my career, I have had the opportunity to work on a variety of projects that have honed my analytical skills and deepened my understanding of data-driven decision-making. From analyzing market trends to identifying patterns in customer behavior, I have consistently delivered insights that have informed strategic business decisions.
+
+While I may not have experience with all the specific technologies or tools listed in the job description, I am a quick learner and have a strong foundation in statistical analysis and programming languages such as Python and R. I am confident that I can quickly get up to speed and make meaningful contributions to your team.
+
+Thank you for considering my application. I am eager to learn more about the opportunities at TCS and how I can contribute to your success. Please find my resume attached for your review.
+
+Sincerely,
+Malhar Shinde
+",0.4214,0.7826,0.3935,0.7566,Bad
+"Dear Hiring Manager,
+
+I am writing to express my interest in the Data Scientist position at TCS. With two years of experience in data analysis and machine learning, I am excited about the opportunity to contribute to your team.
+
+Throughout my career, I have had the opportunity to work on a diverse range of projects that have allowed me to develop my analytical skills and gain valuable experience in data-driven decision-making. From developing predictive models to analyzing large datasets, I have consistently delivered actionable insights that have driven business growth.
+
+While I may not have experience with all the specific technologies or tools mentioned in the job description, I am a quick learner and have a strong foundation in statistical analysis and programming languages such as Python and SQL. I am confident that I can quickly adapt to new technologies and make meaningful contributions to your team.
+
+Thank you for considering my application. I am eager to learn more about the opportunities at TCS and how I can contribute to your success. Please find my resume attached for your review.
+
+Best regards,
+Malhar Shinde
+
+",0.4172,0.7916,0.3779,0.7736,Bad
+"Dear Hiring Manager,
+
+I am writing to apply for the Data Scientist position at TCS. With two years of experience in data analysis and machine learning, I am confident in my ability to contribute effectively to your team.
+
+Throughout my career, I have had the opportunity to work on a variety of projects that have allowed me to develop my analytical skills and gain valuable experience in data-driven decision-making. From analyzing customer behavior to optimizing business processes, I have consistently delivered insights that have driven business growth and improved operational efficiency.
+
+While I may not have experience with all the specific technologies or tools listed in the job description, I am a quick learner and have a strong foundation in statistical analysis and programming languages such as Python and SQL. I am confident that I can quickly adapt to new technologies and make meaningful contributions to your team.
+
+Thank you for considering my application. I am excited about the opportunity to learn more about the opportunities at TCS and how I can contribute to your success. Please find my resume attached for your review.
+
+Sincerely,
+Malhar Shinde",0.4243,0.774,0.4056,0.7793,Bad
+"Dear Sir/Madam,
+Hello! Please find my resume attached in response to the Management Associate position
+posted on your website. As you probably saw, I’m Brandon. Why did I sign up for this position?
+Well, I’m going to cut to the chase here: I think I’m born to be a Management Associate after reading
+the requirements in your advertisement.
+To give you a snapshot of who I am: I’m relaxed, I’m friendly, and I’m SUPERB at working
+with people! In fact, my friends often tell me I’m “a people person”! LOL. But there are a few things
+the resume doesn’t show, and I think they are very important for you to know as well.
+I have the drive to excel in this position and I put 110% effort into all that I do. I am skilled at
+project management, marketing, and working under intense deadlines. I work great in a team and I am
+comfortable working independently as well. My FYP supervisor had commended me on my research
+skills too. I have outstanding organisational skills and am dynamically trained in Microsoft Office
+programmes. My professionally-relevant hobbies include photography and web development. I have
+lived in various countries and it gives me a unique perspective that I bring to my work. It also may be
+of interest to you that I was the Hall King of XYZ Hall in 2019 — yup, I’m a looker!
+In short, if you are looking to have a smart, creative, good-looking, and detail-oriented genius
+in your team, I am your guy.
+I would love to share with you how my skills and ideas can benefit your company in an
+interview with yourself or the director.
+Thanks for your consideration; I look forward to hearing from you soon!
+Sincerely,
+Brandon
+P.S. I only apply to companys that I’m highly interested in.",0.4762,0.812,0.4628,0.8135,Good
+"Dear Hiring Manager,
+
+I am writing to apply for the Data Scientist position at TCS. I recently came across your job posting and believe I am a perfect fit for the role.
+
+I have a background in data analysis and am proficient in various programming languages such as Python and R. I have worked on a few projects in the past that involved data manipulation and visualization. My experience may be limited, but I am eager to learn and grow in this field.
+
+While I may not have all the skills listed in the job description, I am a quick learner and am willing to put in the effort to upskill myself as needed.
+
+Thank you for considering my application. I look forward to the opportunity to discuss how I can contribute to your team further.
+
+Sincerely,
+Malhar Shinde",0.3893,0.7805,0.3707,0.8225,Bad
+"Dear hiring manager,
+‍
+I'm excited to apply for the teller position at Centier Bank.
+‍
+As a recent graduate with a degree in finance, I focused my studies on financial analysis, investment, and accounting. I also gained hands-on experience in the accounting department of a local small business, where I was responsible for 100% of the bookkeeping, completed weekly payroll, and finalized annual tax preparation.
+‍
+I'm confident that my academic and work experience make me a strong candidate for this position. I'm detail-oriented, analytical, and have strong problem-solving skills, demonstrated by a 30% improvement in project efficiency in my last role. I'm also committed to delivering excellent customer service and am comfortable working in a fast-paced environment.
+‍
+I'm excited about the opportunity to work at your bank and contribute to your team. Thank you for considering my application.
+
+Sincerely,
+‍
+Malhar Shinde",,,,,
+"Dear hiring manager,
+‍
+I'm excited to apply for the floor manager position at your production facility. 
+‍
+With five years of experience in the operations industry, I've overseen the functions of various teams of 10+ employees, ensuring efficient and effective productivity while maintaining high standards of safety and quality—with a 97% safety record. I'm experienced with all aspects of production management, including scheduling, resource allocation, and performance management.
+‍
+My degree in business equipped me with the necessary knowledge to manage budgets and financial plans, as well as develop strategies to increase productivity and reduce costs, resulting in a 20% reduction in overhead for my last seven projects.
+‍
+I'm excited about the opportunity to bring my analytical skills and efficiency-focused experience to your production facility and contribute to the success of your organization. Thank you for considering my application.
+‍
+Sincerely,
+‍
+Malhar Shinde",,,,,
+"Dear hiring manager,
+‍
+With 20+ years of experience in the retail industry, including eight years in e-commerce, I was thrilled to see an opening for the VP of Marketing at Lynworks. 
+‍
+In my previous roles, I've consistently increased profits by 5% YoY through a combination of strategic planning, effective team management, and a deep understanding of customer needs. I'm passionate about leveraging data and analytics to inform decision-making and identify opportunities for growth—evidenced by my GTM strategy for a flagship product line that increased market share by 10%.
+‍
+As a senior-level candidate, I'm eager to bring my leadership skills and expertise to a dynamic and innovative team. I'm committed to fostering a culture of collaboration and continuous learning, with an 87% employee retention rate, and I'm excited about the opportunity to contribute to growth and success at Lynworks.
+‍
+Thank you for considering my application. Please reach out to me at [phone number or email address] to discuss my qualifications further.
+‍
+Sincerely,
+‍
+Malhar Shinde",,,,,
+"Dear hiring manager,
+
+I'm excited to apply at TCS as a Freelance Graphic Designer. With 5+ years of experience in SaaS graphic design and a portfolio that includes over 100 diverse SaaS projects, I'm well-equipped to contribute to your innovative team.
+
+I admire TCS commitment to excellence and social responsibility. My track record includes boosting client engagement by 30% and a 24% increase in user activation through targeted design strategies using Figma, Marketo, and Adobe Creative Suite, and I'm eager to achieve similar results with you.
+
+Thank you for considering my application. I look forward to the possibility of driving your creative vision with measurable success.
+
+Best,
+
+Malhar Shinde",,,,,

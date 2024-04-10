@@ -1,7 +1,7 @@
 #IN THE BELOW CODE I AM JUST TAKING THE SKILLS THAT ARE PRESENT IN THE DATASET
 
 import os
-import fitz  # PyMuPDF # type: ignore
+import fitz 
 import pandas as pd
 from datetime import datetime
 import re
