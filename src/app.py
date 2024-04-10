@@ -5,6 +5,9 @@ import subprocess
 from resume_parsing import parse_resume
 from Cover_Letter import final_cover_letter
 from datetime import datetime
+import pandas as pd
+from io import StringIO
+from Employee_Review import preprocess_text, get_sentiment
 
 app = Flask(__name__)
 
@@ -12,6 +15,7 @@ app = Flask(__name__)
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['Project']  # Replace 'Project' with your actual database name
 resume_collection = db['resume']  # Collection to store resume data
+review_collection = db['Employee_Review']
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
