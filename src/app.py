@@ -40,10 +40,14 @@ def get_user_password(user_id):
 
 app = Flask(__name__)
 
+# Set a secret key
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
 # MongoDB connection
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['Project']  # Replace 'Project' with your actual database name
-resume_collection = db['resume']  # Collection to store resume data
+login_collection_employee = db['Login_Details'] # Collection to store login data for Employees
+login_collection_candidate = db['candidate'] # Collection to store login data for Candidates
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
@@ -76,7 +80,6 @@ def upload_files():
                 
                 # Insert resume and cover letter data into MongoDB
                 resume_data = {
-                    'candidate_id':session.get('candidate_id'),
                     'resume_name': pdf_name,
                     'resume_content':Binary(resume_content),
                     'cover_letter_name': cover_letter_file.filename,
@@ -88,12 +91,23 @@ def upload_files():
                     'cultural_fit': cultural_fit,
                     'upload_date': upload_date
                 }
-                resume_collection.insert_one(resume_data)
+                
+                # Retrieve the candidate document based on the cand_id stored in the Flask session
+                cand_id = session.get('emp_id')
+                candidate_document = login_collection_candidate.find_one({'cand_id': cand_id})
+
+                if candidate_document:
+                    # Append the resume data to the candidate document
+                    if 'resumes' in candidate_document:
+                        candidate_document['resumes'].append(resume_data)
+                    else:
+                        candidate_document['resumes'] = [resume_data]
+
+                    # Update the candidate document in the MongoDB collection
+                    result = login_collection_candidate.update_one({'cand_id': cand_id}, {'$set': candidate_document})
 
 
-               
-
-        return redirect(url_for('candidate_dashboard')) 
+    return redirect(url_for('candidate_dashboard')) 
 
 
 # Route for candidate dashboard
@@ -103,7 +117,7 @@ def candidate_dashboard():
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return response
 
-#Route for login page
+#Route for employees login page
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -146,20 +160,25 @@ def download_cover_letter(candidate_id):
     else:
         return 'Cover letter not found for candidate ID: {}'.format(candidate_id), 404
 
+# Route for candidate login page
+@app.route('/login_candidate')
+def login_candidate():
+    return render_template('login_candidate.html')
 
+# Route for employee validation
 @app.route('/validate', methods=['POST'])
 def validate():
     if request.method == 'POST':
-        candidate_id = int(request.form['candidate-id'])
+        candidate_id = request.form['candidate-id']
         password = request.form['password']
         
-        login_data = login_collection.find_one({'candidate_id': candidate_id, 'Password': password})
+        login_data = login_collection_employee.find_one({'emp_id': candidate_id, 'password': password})
         
         if login_data:
-            session['candidate_id'] = candidate_id
-            session['designation'] = login_data.get('Designation')
-            session['name'] = login_data.get('Name')
-            print(session['candidate_id'])
+            session['emp_id'] = candidate_id
+            session['designation'] = login_data.get('designation')
+            session['name'] = login_data.get('name')
+            print(session['emp_id'])
             print(session['designation'])
             print(session['name'])
             
@@ -167,6 +186,23 @@ def validate():
                 return redirect(url_for('hr_dashboard'))
             elif session['designation'] == 'Candidate':
                 return redirect(url_for('candidate_dashboard'))
+        else:
+            flash('Invalid Login Credentials. Please try again')
+        
+        return redirect(url_for('login'))
+    
+
+# Route for Candidate Validation
+@app.route('/validate_candidate', methods=['POST'])
+def validate_candidate():
+    if request.method == 'POST':
+        candidate_id = request.form['candidate-id']
+        password = request.form['password']
+        
+        login_data = login_collection_candidate.find_one({'cand_id': candidate_id, 'password': password})
+        
+        if login_data:
+            return redirect(url_for('candidate_dashboard'))
         else:
             flash('Invalid Login Credentials. Please try again')
         
@@ -187,7 +223,7 @@ def logout():
 @app.route('/hr')
 def hr_dashboard():
     # Fetch parsed resume data from MongoDB
-    resumes = resume_collection.find({})
+    resumes = login_collection_candidate.find({})
     return render_template('hrdash.html', resumes=resumes)
 
 @app.route('/change_password', methods=['POST'])
