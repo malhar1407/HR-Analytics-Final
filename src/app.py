@@ -1,3 +1,4 @@
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file
 from pymongo import MongoClient
 import os
@@ -46,8 +47,10 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 # MongoDB connection
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['Project']  # Replace 'Project' with your actual database name
-login_collection_employee = db['Login_Details'] # Collection to store login data for Employees
-login_collection_candidate = db['candidate'] # Collection to store login data for Candidates
+resume_collection = db['resume']  # Collection to store resume data
+login_collection = db['Login_Details']  # Collection to store login details
+past_employees_collection = db['past_employees']  # Collection to store past employees
+
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
@@ -80,6 +83,7 @@ def upload_files():
                 
                 # Insert resume and cover letter data into MongoDB
                 resume_data = {
+                    'candidate_id':session.get('candidate_id'),
                     'resume_name': pdf_name,
                     'resume_content':Binary(resume_content),
                     'cover_letter_name': cover_letter_file.filename,
@@ -91,23 +95,13 @@ def upload_files():
                     'cultural_fit': cultural_fit,
                     'upload_date': upload_date
                 }
-                
-                # Retrieve the candidate document based on the cand_id stored in the Flask session
-                cand_id = session.get('emp_id')
-                candidate_document = login_collection_candidate.find_one({'cand_id': cand_id})
+                resume_collection.insert_one(resume_data)
 
-                if candidate_document:
-                    # Append the resume data to the candidate document
-                    if 'resumes' in candidate_document:
-                        candidate_document['resumes'].append(resume_data)
-                    else:
-                        candidate_document['resumes'] = [resume_data]
+        return redirect(url_for('candidate_dashboard'))
 
-                    # Update the candidate document in the MongoDB collection
-                    result = login_collection_candidate.update_one({'cand_id': cand_id}, {'$set': candidate_document})
+               
 
-
-    return redirect(url_for('candidate_dashboard')) 
+        return redirect(url_for('candidate_dashboard')) 
 
 
 # Route for candidate dashboard
@@ -225,6 +219,76 @@ def hr_dashboard():
     # Fetch parsed resume data from MongoDB
     resumes = login_collection_candidate.find({})
     return render_template('hrdash.html', resumes=resumes)
+
+# Route for Admin dashboard
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    # Fetch current employees from MongoDB collection 'Login_Details'
+    employees = list(db['Login_Details'].find({}))
+    return render_template('admindash.html', employees=employees)
+
+
+# Route for adding employee
+@app.route('/admin/dashboard/addemp', methods=['GET', 'POST'])
+def add_employee():
+    if request.method == 'POST':
+        # Extract employee details from the form
+        emp_id = request.form.get('emp_id')
+        name = request.form.get('name')
+        designation = request.form.get('designation')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Insert employee details into MongoDB
+        employee_data = {
+            'emp_id': emp_id,
+            'name': name,
+            'designation': designation,
+            'email': email,
+            'password': password,
+            'created_at': datetime.now()
+        }
+        login_collection.insert_one(employee_data)
+
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('addemp.html')
+
+# Route for deleting employee
+@app.route('/admin/dashboard/delemp', methods=['GET', 'POST'])
+def delete_employee():
+    if request.method == 'POST':
+        emp_id = request.form.get('emp_id')
+        employee = login_collection.find_one({'emp_id': emp_id})
+        if employee:
+            return jsonify({'emp_id': employee['emp_id']})
+        else:
+            return jsonify({'error': 'Employee not found'})
+    else:
+        # Fetch current employees from MongoDB collection 'Login_Details'
+        employees = list(db['Login_Details'].find({}))
+        return render_template('delemp.html', employees=employees)
+
+
+# Route for handling employee deletion confirmation (AJAX POST request)
+@app.route('/admin/dashboard/delete_confirm', methods=['POST'])
+def delete_confirm():
+    emp_id = request.form.get('emp_id')
+    feedback = request.form.get('feedback')
+
+    # Move employee to past employees collection
+    employee = login_collection.find_one_and_delete({'emp_id': emp_id})
+    if employee:
+        # Add the reason for deletion to the employee data
+        employee['feedback'] = feedback
+
+        # Insert employee data into past employees collection
+        past_employees_collection.insert_one(employee)
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Employee not found'})
+
+
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
