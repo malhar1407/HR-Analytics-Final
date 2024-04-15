@@ -39,6 +39,9 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+        input[type="password"][readonly] {
+            background-color: #eee;
+        }
         button[type="submit"] {
             background-color: #4CAF50;
             color: white;
@@ -50,6 +53,14 @@
         }
         button[type="submit"]:hover {
             background-color: #45a049;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -63,26 +74,30 @@
 
         <form method="POST">
             <label for="emp_id">Employee ID:</label>
-            <input type="text" id="emp_id" name="emp_id" required><br>
+            <input type="text" id="emp_id" name="emp_id" value="{{ emp_id }}" readonly><br>
 
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required><br>
 
             <label for="designation">Designation:</label>
-            <input type="text" id="designation" name="designation" required><br>
+            <select id="designation" name="designation" required>
+                <option value="AVP">AVP</option>
+                <option value="HR">HR</option>
+                <option value="Employee">Employee</option>
+                <option value="Admin">Admin</option>
+            </select><br>
 
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required><br>
 
+            <label for="phone">Phone Number:</label>
+            <input type="text" id="phone" name="phone" required pattern="[0-9]{10}" title="Please enter a 10-digit phone number"><br>
+
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br>
+            <input type="password" id="password" name="password" value="Admin123@" readonly><br>
 
             <button type="submit">Add Employee</button>
         </form>
     </div>
-
-    <script>
-        // You can add JavaScript code here if needed
-    </script>
 </body>
 </html>

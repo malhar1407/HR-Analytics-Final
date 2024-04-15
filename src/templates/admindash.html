@@ -6,30 +6,69 @@
     <title>Admin Dashboard</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Style for sidebar */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Hide the sidebar by default */
+            height: 100%;
+            width: 250px;
+            background-color: rgba(52, 58, 64, 0.9); /* Dark gray color with 90% opacity */
+            padding-top: 55px; /* Space for the navbar */
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+                /* Style for sidebar buttons */
+        #sidebar .list-unstyled.components li {
+            padding-top: 10px; /* Adjust the padding as needed */
+        }
+
+
+        /* Show the sidebar when active */
+        #sidebar.active {
+            left: 0;
+        }
+
+        /* Toggle button style */
+        #sidebarCollapse {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Align to top left corner */
+            cursor: pointer;
+            z-index: 2000;
+            color: white; /* Set the color to white */
+        }
+        .navbar-brand {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Make the sidebar icon larger */
+        #sidebarCollapse i {
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">Admin Dashboard</a>
+    <!-- Sidebar toggle button -->
+    <button id="sidebarCollapse" class="btn btn-dark">
+        <i class="fas fa-bars"></i>
+    </button>
+    <!-- Centered title -->
+    <a class="navbar-brand mx-auto" href="#">Admin Dashboard</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('add_employee') }}">Add Employee</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('delete_employee') }}">Delete Employee</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Edit Employee</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Edit Form</a>
-            </li>
-        </ul>
+        <!-- Nav items -->
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
                 <a class="nav-link" href="#">Logout / Change Password</a>
@@ -38,9 +77,30 @@
     </div>
 </nav>
 
+<!-- Sidebar -->
+<div id="sidebar">
+    <ul class="list-unstyled components">
+        <li>
+            <a href="{{ url_for('add_employee') }}" class="btn btn-dark btn-block">Add Employee</a>
+        </li>
+        <li>
+            <a href="{{ url_for('delete_employee') }}" class="btn btn-dark btn-block">Delete Employee</a>
+        </li>
+        <li>
+            <a href="{{ url_for('edit_employee_page') }}" class="btn btn-dark btn-block">Edit Employee</a>
+        </li>
+        <li>
+            <button type="button" class="btn btn-dark btn-block" onclick="window.location.href='#'">Edit Form</button>
+        </li>
+        <li>
+            <button type="button" class="btn btn-dark btn-block" onclick="window.location.href='#'">Add Candidate</button>
+        </li>
+    </ul>
+</div>
+
 <!-- Employee Table -->
 <div class="container mt-5">
-    <h2>Current Employees</h2>
+    <h2 class="text-center">Current Employees</h2>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -64,6 +124,18 @@
         </tbody>
     </table>
 </div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<script>
+    // Sidebar toggle functionality
+    $(document).ready(function () {
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').toggleClass('active');
+        });
+    });
+</script>
 
 </body>
 </html>
