@@ -67,14 +67,16 @@
                     <th>Email</th>
                     <th>Skills</th>
                     <th>Cultural Fit</th>
+                    <th>Domain</th>
+                    <th>Experience</th>
                     <th>Upload Date</th> 
                 </tr>
             </thead>
             <tbody>
                 {% for resume in resumes %}
                 <tr>
-                    <td><a href="/download_resume/{{ resume.candidate_id }}" target="_blank">{{ resume.resume_name }}</a></td>
-                    <td><a href="/download_cover_letter/{{ resume.candidate_id }}" target="_blank">{{resume.cover_letter_name}}</a></td>
+                    <td><a href="/download_resume/{{ resume.cand_id }}" target="_blank">{{ resume.resume_name }}</a></td>
+                    <td><a href="/download_cover_letter/{{ resume.cand_id }}" target="_blank">{{resume.cover_letter_name}}</a></td>
                     <td>{{ resume.name }}</td>
                     <td>{{ resume.contact_info }}</td>
                     <td>{{ resume.email }}</td>
@@ -86,6 +88,8 @@
                         </ul>
                     </td>
                     <td>{{ '%.2f' % resume.cultural_fit }}</td>
+                    <td>{{resume.main_domain}}</td>
+                    <td>{{resume.years_experience}}</td>
                     <td>{{ resume.upload_date }}</td> <!-- Display upload date-time stamp -->
                 </tr>
                 {% endfor %}

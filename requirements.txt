@@ -1,4 +1,4 @@
-pandas
+    pandas
 numpy 
 seaborn
 flask
@@ -15,7 +15,7 @@ nltk
 scikit-learn==1.2.2
 torch
 frontend
-
+streamlit
 
 
 #-e .
