@@ -393,6 +393,6 @@ def change_password_page():
 
 if __name__ == '__main__':
     # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
-    app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\uploads'  # Define upload folder path  # Define upload folder path
+    app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
