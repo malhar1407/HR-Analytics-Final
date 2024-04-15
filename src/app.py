@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, make_response, send_file
 from pymongo import MongoClient
 import os
 import subprocess
@@ -7,49 +7,58 @@ from Cover_Letter import final_cover_letter
 from datetime import datetime
 from bson.binary import Binary
 from io import BytesIO
+from tempfile import NamedTemporaryFile
+
 
 def update_user_password(user_id, new_password):
     # MongoDB connection
     mongo_client = MongoClient("mongodb://localhost:27017")
     db = mongo_client['Project']  # Replace 'Project' with your actual database name
-    login_collection = db['Login_Details'] # Collection to store login data
+    designation = session.get('designation')
+    print('UPDATE PASSWORD DESIGNATION ', designation)
+
+    if designation == 'Candidate':
+        login_collection = db['candidate']
+        # Update the user's password in the database
+        login_collection.update_one({'cand_id': user_id}, {'$set': {'password': new_password}})
+        mongo_client.close()  # Close MongoDB connection
+    else:
+        login_collection = db['Login_Details']
+        # Update the user's password in the database
+        login_collection.update_one({'emp_id': user_id}, {'$set': {'password': new_password}})
+        mongo_client.close()  # Close MongoDB connection
     
-    # Update the user's password in the database
-    login_collection.update_one({'id': user_id}, {'$set': {'Password': new_password}})
-    mongo_client.close()  # Close MongoDB connection
+    
 
 def get_user_password(user_id):
     # MongoDB connection
     mongo_client = MongoClient("mongodb://localhost:27017")
-    db = mongo_client['Project']  
-    login_collection = db['Login_Details'] 
+    db = mongo_client['Project'] 
+    designation = session.get('designation') 
+    print('GET PASSWORD DESIGNATION ', designation)
     
-    # Query the database to get the user's password
-    user_data = login_collection.find_one({'id': user_id})
-    if user_data:
-        user_password = user_data.get('Password')
-        mongo_client.close()  # Close MongoDB connection
-        return user_password
+    if designation == 'Candidate':
+        login_collection = db['candidate']
+        user_data = login_collection.find_one({'cand_id' : user_id})
+        if user_data:
+            user_password = user_data.get('password')
+            mongo_client.close()
+            return user_password
     else:
-        mongo_client.close()  # Close MongoDB connection
-        return None
+        login_collection = db['Login_Details']
+        user_data = login_collection.find_one({'emp_id' : user_id})
+        if user_data:
+            user_password = user_data.get('password')
+            mongo_client.close()
+            return user_password 
+    
 
-def generate_emp_id():
-    # MongoDB connection
-    mongo_client = MongoClient("mongodb://localhost:27017")
-    db = mongo_client['Project']  
-    login_collection = db['Login_Details'] 
 
-    # Get the count of existing employees
-    count = login_collection.count_documents({})
 
-    # Generate a new employee ID with 5 digits
-    emp_id = str(count + 1).zfill(5)
-    mongo_client.close()  # Close MongoDB connection
 
-    return emp_id
 
 app = Flask(__name__)
+
 # Set a secret key
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
@@ -59,6 +68,7 @@ db = mongo_client['Project']  # Replace 'Project' with your actual database name
 resume_collection = db['resume']  # Collection to store resume data
 login_collection = db['Login_Details']  # Collection to store login details
 past_employees_collection = db['past_employees']  # Collection to store past employees
+login_collection_candidate = db['candidate'] # Collection to store candidates
 
 
 # Route for uploading resumes
@@ -68,6 +78,8 @@ def upload_files():
         # Get the list of uploaded resumes and cover letters
         uploaded_resumes = request.files.getlist('resumes')
         uploaded_cover_letters = request.files.getlist('cover_letter')
+        main_domain = request.form['main_domain']  # Get the main domain from the form
+        years_experience = request.form['years_experience']  # Get the years of experience from the form
 
         # Process uploaded resumes and cover letters
         for resume_file, cover_letter_file in zip(uploaded_resumes, uploaded_cover_letters):
@@ -92,7 +104,7 @@ def upload_files():
                 
                 # Insert resume and cover letter data into MongoDB
                 resume_data = {
-                    'emp_id': session.get('emp_id'),
+                    'candidate_id':session.get('emp_id'),
                     'resume_name': pdf_name,
                     'resume_content': Binary(resume_content),
                     'cover_letter_name': cover_letter_file.filename,
@@ -102,35 +114,58 @@ def upload_files():
                     'email': email,
                     'skills': list(skills),
                     'cultural_fit': cultural_fit,
-                    'upload_date': upload_date
+                    'upload_date': upload_date,
+                    'main_domain': main_domain,  
+                    'years_experience': years_experience
                 }
                 resume_collection.insert_one(resume_data)
 
-        return redirect(url_for('candidate_dashboard'))
+                # Update or insert candidate data into MongoDB
+                candidate_data = {
+                    'name': name,
+                    'contact_info': contact_info,
+                    'email': email,
+                    'upload_date': upload_date
+                }
+                login_collection_candidate.update_one(
+                    {'cand_id': session.get('emp_id')},
+                    {'$set': candidate_data}
+                    
+                )
 
+        #return redirect(url_for('candidate_dashboard'))
+        return render_template('candash.html', upload_date=upload_date)
+
+        
                
 
-        return redirect(url_for('candidate_dashboard')) 
-
+    return redirect(url_for('candidate_dashboard')) 
 
 # Route for candidate dashboard
 @app.route('/candidate')
 def candidate_dashboard():
-    response = make_response(render_template('Candash.html'))
+    # Check if the candidate has uploaded documents
+    uploaded_documents = resume_collection.find_one({'candidate_id': session.get('emp_id')})
+    
+    if uploaded_documents:
+        upload_date = uploaded_documents['upload_date']
+    else:
+        upload_date = None
+
+    response = make_response(render_template('Candash.html', upload_date=upload_date))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return response
-
-#Route for login page
+#Route for employees login page
 @app.route('/login')
 def login():
     return render_template('login.html')
 
 
 # Route to download resume
-@app.route('/download_resume/<emp_id>', methods=['GET'])
-def download_resume(emp_id):
-    # Find the resume document in MongoDB based on emp_id
-    resume_document = resume_collection.find_one({'emp_id': emp_id})
+@app.route('/download_resume/<candidate_id>', methods=['GET'])
+def download_resume(candidate_id):
+    # Find the resume document in MongoDB based on candidate_id
+    resume_document = resume_collection.find_one({'cand_id': candidate_id})
     if resume_document:
         resume_content = resume_document['resume_content']
         resume_filename = resume_document['resume_name']
@@ -140,16 +175,16 @@ def download_resume(emp_id):
         resume_file.seek(0)
         
         # Return the file as a downloadable attachment
-        return send_file(resume_file, attachment_filename=resume_filename, as_attachment=True)
+        return send_file(resume_file, download_name=resume_filename, as_attachment=True)
     else:
         return 'Resume not found for employee ID: {}'.format(emp_id), 404
 
 
 # Route to download cover letter
-@app.route('/download_cover_letter/<emp_id>', methods=['GET'])
-def download_cover_letter(emp_id):
-    # Find the cover letter document in MongoDB based on employee_id
-    cover_letter_document = resume_collection.find_one({'emp_id': emp_id})
+@app.route('/download_cover_letter/<candidate_id>', methods=['GET'])
+def download_cover_letter(candidate_id):
+    # Find the cover letter document in MongoDB based on candidate_id
+    cover_letter_document = resume_collection.find_one({'cand_id': candidate_id})
     if cover_letter_document:
         cover_letter_content = cover_letter_document['cover_letter_content']
         cover_letter_filename = cover_letter_document['cover_letter_name']
@@ -159,22 +194,26 @@ def download_cover_letter(emp_id):
         cover_letter_file.seek(0)
         
         # Return the file as a downloadable attachment
-        return send_file(cover_letter_file, attachment_filename=cover_letter_filename, as_attachment=True)
+        return send_file(cover_letter_file, as_attachment=True, download_name=cover_letter_filename)
     else:
         return 'Cover letter not found for employee ID: {}'.format(emp_id), 404
 
+# Route for candidate login page
+@app.route('/login_candidate')
+def login_candidate():
+    return render_template('login_candidate.html')
 
+# Route for employee validation
 @app.route('/validate', methods=['POST'])
 def validate():
     if request.method == 'POST':
-        emp_id = request.form['emp_id']
+        candidate_id = request.form['candidate-id']
         password = request.form['password']
-        print(type(emp_id))
-        print(type(password))
-        login_data = login_collection.find_one({'emp_id': emp_id, 'password': password})
-        print(login_data)
+        
+        login_data = login_collection.find_one({'emp_id': candidate_id, 'password': password})
+        
         if login_data:
-            session['emp_id'] = emp_id
+            session['emp_id'] = candidate_id
             session['designation'] = login_data.get('designation')
             session['name'] = login_data.get('name')
             print(session['emp_id'])
@@ -193,6 +232,27 @@ def validate():
         return redirect(url_for('login'))
     
 
+# Route for Candidate Validation
+@app.route('/validate_candidate', methods=['POST'])
+def validate_candidate():
+    if request.method == 'POST':
+        candidate_id = request.form['candidate-id']
+        password = request.form['password']
+        
+        login_data = login_collection_candidate.find_one({'cand_id': candidate_id, 'password': password})
+        
+        if login_data:
+            session['emp_id']=candidate_id
+            session['designation'] = login_data.get('designation')
+            session['name'] = login_data.get('name')
+            print(session['emp_id'])
+            return redirect(url_for('candidate_dashboard'))
+        else:
+            flash('Invalid Login Credentials. Please try again')
+        
+        return redirect(url_for('login_candidate'))
+    
+
 # Route for logging out
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -201,8 +261,6 @@ def logout():
     # Redirect the user to the login page
     return redirect(url_for('login'))
         
-
-
 # Route for HR dashboard
 @app.route('/hr')
 def hr_dashboard():
@@ -283,7 +341,6 @@ def delete_confirm():
         return jsonify({'error': 'Employee not found'})
 
 
-
 @app.route('/change_password', methods=['POST'])
 def change_password():
     if request.method == 'POST':
@@ -297,10 +354,12 @@ def change_password():
             flash('New password and confirm password do not match. Please try again.', 'error')
             return redirect(url_for('change_password_page'))
         
-        # Get the user's current password from the database (you need to implement this)
-        # For demonstration purposes, I'll assume you have a function called `get_user_password`
+        
         user_id = session.get('emp_id')
-        user_password = get_user_password(user_id)  # Implement this function
+        print(user_id)
+
+        # Get current user password
+        user_password = get_user_password(user_id)  
         
         # Check if the current password matches the password in the database
         if current_password != user_password:
@@ -318,6 +377,17 @@ def change_password():
             return redirect(url_for('candidate_dashboard'))
         elif (designation == 'HR'):
             return redirect(url_for('hr_dashboard'))
+        elif(designation == 'Admin'):
+            return redirect(url_for('admin_dashboard'))
+
+@app.route('/back', methods=['POST'])
+def back():
+    user = session.get('designation')
+
+    if user == 'Candidate':
+        return redirect(url_for('candidate_dashboard'))
+    elif user == 'HR':
+        return redirect(url_for('hr_dashboard'))
 
 # Route for rendering the change password page
 @app.route('/change_password_page', methods=['POST','GET'])
@@ -366,6 +436,7 @@ def save_employee_changes():
         return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
-    streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
-    app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path
+    # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
+    print(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
