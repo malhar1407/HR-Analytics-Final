@@ -67,13 +67,14 @@
                     <th>Email</th>
                     <th>Skills</th>
                     <th>Cultural Fit</th>
-                    <th>Domain</th>
-                    <th>Experience</th>
                     <th>Upload Date</th> 
+                    <th>Result</th>
+                    <th>Meets</th>
                 </tr>
             </thead>
             <tbody>
                 {% for resume in resumes %}
+                {% if 'status' not in resume %}
                 <tr>
                     <td><a href="/download_resume/{{ resume.cand_id }}" target="_blank">{{ resume.resume_name }}</a></td>
                     <td><a href="/download_cover_letter/{{ resume.cand_id }}" target="_blank">{{resume.cover_letter_name}}</a></td>
@@ -88,17 +89,55 @@
                         </ul>
                     </td>
                     <td>{{ '%.2f' % resume.cultural_fit }}</td>
-                    <td>{{resume.main_domain}}</td>
-                    <td>{{resume.years_experience}}</td>
                     <td>{{ resume.upload_date }}</td> <!-- Display upload date-time stamp -->
+                    <td>
+                        <button type="button" class="btn btn-success" onclick="acceptCandidate('{{ resume.cand_id }}')">Accept</button>
+                        <br><br>
+                        <button type="button" class="btn btn-danger" onclick="rejectCandidate('{{ resume.cand_id }}')">Reject</button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="scheduleMeeting('{{ resume.cand_id }}')">Schedule</button>
+                    </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    
+
+
+    
+
+    <!-- JavaScript -->
+<script>
+    function acceptCandidate(candidateId) {
+        window.location.href = '/accept_candidate/' + candidateId;
+    }
+
+    function rejectCandidate(candidateId) {
+        var reason = prompt("Please enter the reason for rejection:");
+        if (reason !== null && reason.trim() !== "") {
+            // If the user entered a reason, redirect to the reject route
+            window.location.href = '/reject_candidate/' + candidateId + '?reason=' + encodeURIComponent(reason);
+        }
+    }
+
+    function scheduleMeeting(candidateId) {
+        window.location.href = '/schedule_meeting/' + candidateId;
+    }
+</script>
+
+
+
+
+    </script>
+
     <!-- Bootstrap JS (optional) -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- jQuery (optional) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
 </body>
 </html>

@@ -52,6 +52,24 @@
         #sidebarCollapse i {
             font-size: 24px;
         }
+
+        .task-bar-buttons {
+                    display: flex;
+                    align-items: center;
+        }
+        .task-bar-buttons button {
+                    margin-left: 10px;
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    border: none;
+                    cursor: pointer;
+        }
+        .task-bar-buttons button:hover {
+                    background-color: #45a049;
+        }
     </style>
 </head>
 <body>
@@ -64,16 +82,18 @@
     </button>
     <!-- Centered title -->
     <a class="navbar-brand mx-auto" href="#">Admin Dashboard</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <!-- Nav items -->
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="#">Logout / Change Password</a>
-            </li>
-        </ul>
+    <!-- Move buttons to the right -->
+    <div class="navbar-collapse justify-content-end">
+        <div class="task-bar-buttons">
+            <!-- Change Password Button -->
+            <form method="POST" action="/change_password_page">
+                <button type="submit" class="btn btn-dark">Change Password</button>
+            </form>
+            <!-- Logout Button -->
+            <form method="POST" action="/logout">
+                <button type="submit" class="btn btn-dark">Logout</button>
+            </form>
+        </div>
     </div>
 </nav>
 
