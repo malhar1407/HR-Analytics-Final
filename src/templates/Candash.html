@@ -12,7 +12,7 @@
         <style>
             body {
             font-family: Arial, sans-serif;
-            background-color: #eb9b34;
+            background-color: #095a5f;
             margin: 0;
             padding: 0;
             }
@@ -37,10 +37,19 @@
                 text-align: center;
                 color: #444;
             }
-            .meetings, .documents, .status {
+            .meetings, .documents {
                 background-color: #f9f9f9;
                 padding: 10px;
                 border-radius: 5px;
+            }
+
+            .status{
+                background-color: #f9f9f9;
+                padding: 10px;
+                border-radius: 5px;
+                width: 100%; /* Set the width to 100% */
+                max-width: 800px; /* Set a maximum width if needed */
+                margin: 0 auto; /* Center the element horizontally */
             }
             p {
                 margin: 10px 0;
@@ -128,7 +137,7 @@
 
             .task-bar-logo {
                 font-size: 24px;
-                margin-right: 10px;}
+                margin-right: auto;}
 
             .dropdown {
                 position: relative;
@@ -157,19 +166,19 @@
             .dropdown:hover .dropbtn {
                 background-color: #555;}
 
-            .task-bar {
-                    background-color: #333;
-                    color: #fff;
-                    padding: 10px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
+                .task-bar {
+                background-color: #333;
+                color: #fff;
+                padding: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
             .task-bar-logo {
                     font-size: 24px;
                     margin-right: 10px;
                 }
-            .task-bar-buttons {
+                .task-bar-buttons {
                     display: flex;
                     align-items: center;
                 }
@@ -183,6 +192,21 @@
                     border: none;
                     cursor: pointer;
                 }
+
+                .task-bar-button {
+    margin-left: 10px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.task-bar-button:hover {
+    background-color: #45a049;
+}
             .task-bar-buttons button:hover {
                     background-color: #45a049;
                 }
@@ -264,24 +288,58 @@
             .documents button[type="submit"]:hover {
                 background-color: #45a049;
             }
+
+            .progress-bar {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin-bottom: 100px;
+            }
+            .progress {
+                height: 20px;
+                border-radius: 5px;
+                text-align: center;
+                line-height: 20px;
+                color: white;
+                float: left;
+            }
+            .part1 {
+                width: 33.33%;
+                background-color: #4caf50;
+            }
+            .part2 {
+                width: 33.33%;
+                background-color: #4caf50;
+            }
+            .part3 {
+                width: 33.33%;
+                background-color: #4caf50;
+            }
         </style>
     </head>
     
     <body>
         <!-- Taskbar -->
         <div class="task-bar">
-            <div class="task-bar-logo">{{ session['name'] }}</div>
+            {% if session['name'] %}
+                <div class="task-bar-logo">{{ session['name'] }}</div>
+            {% else %}
+                <div class="task-bar-logo">&nbsp;</div>
+            {% endif %}
+            
             <div class="task-bar-buttons">
                 <!-- Change Password Button -->
                 <form method="POST" action="/change_password_page">
-                    <button type="submit">Change Password</button>
+                    <button type="submit" class="task-bar-button">Change Password</button>
                 </form>
                 <!-- Logout Button -->
                 <form method="POST" action="/logout">
-                    <button type="submit">Logout</button>
+                    <button type="submit" class="task-bar-button">Logout</button>
                 </form>
             </div>
         </div>
+
+
 
 
         <div class="container">
@@ -291,15 +349,48 @@
             <div class="dashboard-section">
                 <h3 class="section-title">Application Status</h3>
                 <div class="status">
-                    Your application status will be displayed here.
-
+                    {% if application_status in [1, 2, 3] %}
+                        <div class="progress-bar">
+                            <div class="progress part1" style="background-color: {{ ' #4caf50' if application_status >= 1 else '#f1f1f1' }}">
+                                <br>
+                                <p style="color:black">Documents Received</p>
+                            </div>
+                            <div class="progress part2" style="background-color: {{ ' #4caf50' if application_status >= 2 else '#f1f1f1' }}">
+                                <br>
+                                <p style="color:black">Meetings Scheduled</p>
+                            </div>
+                            <div class="progress part3" style="background-color: {{ ' #4caf50' if application_status >= 3 else '#f1f1f1' }}">
+                                <br>
+                                <p style="color:black">Results Announced</p>
+                            </div>
+                        </div>
+                        <!-- Display status if it exists -->
+                        {% if status %}
+                            <!-- <div class="status"> -->
+                                <p style="color:black">{{ status }}</p>
+                            <!-- </div> -->
+                        {% endif %}
+                    {% else %}
+                        <p style="color:black">Your application status will be displayed here.</p>
+                    {% endif %}
                 </div>
             </div>
+            
+            
+            
+            
+            
 
             <div class="dashboard-section">
-                <h3 class="section-title">Schedule Meets</h3>
+                <h3 class="section-title">Scheduled Meets</h3>
                 <div class="meetings">
-                    Your scheduled meets will be displayed here.
+                    {% if meeting_info %}
+                        <p>Meeting Link: {{ meeting_info.link }}</p>
+                        <p>Time of Meeting: {{ meeting_info.time }}</p>
+                        <p>Description: {{ meeting_info.description }}</p>
+                    {% else %}
+                        <p>Your meeting schedule will be displayed here.</p>
+                    {% endif %}
                 </div>
             </div>
 
@@ -310,6 +401,8 @@
                     <p>Please upload your resume and cover letter</p>
                     <br>
                     <p>The format of the files must be pdf</p>
+                    <br>
+                    <p>Keep the filename as your fullname.pdf (firstname_lastname.pdf)</p>
                     <form method="POST" enctype="multipart/form-data" action="/upload"> <!-- Ensure correct action attribute -->
         
                         <label for="resumes">Upload Resume (PDF only): </label>
@@ -320,24 +413,7 @@
                         <input type="file" name="cover_letter" id="cover_letter" accept=".pdf"> <!-- Input field for cover letter -->
                         <br>
 
-                        <label for="main_domain">Main Domain:</label>
-                        <input type="text" name="main_domain" id="main_domain">
-                        <br>
-                        <!-- Radio buttons for years of experience -->
-                        <label for="years_experience">Years of Experience:</label>
-                        <br>
-                        <input type="radio" id="less_than_2" name="years_experience" value="Less than 2 years">
-                        <label for="less_than_2">Less than 2 years</label>
-                        <br>
-                        <input type="radio" id="2_to_5" name="years_experience" value="2 to 5 years">
-                        <label for="2_to_5">2 to 5 years</label>
-                        <br>
-                        <input type="radio" id="5_to_7" name="years_experience" value="5 to 7 years">
-                        <label for="5_to_7">5 to 7 years</label>
-                        <br>
-                        <input type="radio" id="7_plus" name="years_experience" value="7+ years">
-                        <label for="7_plus">7+ years</label>
-                        <br>
+                        
                         <button type="submit">Submit</button>
                 
                         
@@ -350,21 +426,50 @@
             <div class="iframe-container">
                 <!-- Embedded iframe -->
                 <iframe id="myIframe" src="http://localhost:8501" frameborder="0"></iframe>
-              </div>
+            </div>
               
               <!-- Button to toggle iframe -->
               <button class="my-button" onclick="toggleIframe()">Chat</button>
               
-              <script>
+            <script>
                 function toggleIframe() {
-                  var iframeContainer = document.querySelector('.iframe-container');
-                  if (iframeContainer.style.width === '0%') {
-                    iframeContainer.style.width = '50%';
-                  } else {
-                    iframeContainer.style.width = '0%';
-                  }
+                    var iframeContainer = document.querySelector('.iframe-container');
+                    if (iframeContainer.style.width === '0%') {
+                        iframeContainer.style.width = '50%';
+                    } else {
+                        iframeContainer.style.width = '0%';
+                    }
                 }
-              </script>
+            
+                function updateProgressBar(applicationStatus) {
+                    var parts = document.querySelectorAll('.progress');
+                    var status = parseInt(applicationStatus); // Parse applicationStatus to ensure it's an integer
 
+                    // Update progress bar based on status
+                    if (status === 1) {
+                        parts[0].style.backgroundColor = '#4caf50'; // Part 1
+                        parts[1].style.backgroundColor = '#f1f1f1'; // Part 2
+                        parts[2].style.backgroundColor = '#f1f1f1'; // Part 3
+                    } else if (status === 2) {
+                        parts[0].style.backgroundColor = '#4caf50'; // Part 1
+                        parts[1].style.backgroundColor = '#4caf50'; // Part 2
+                        parts[2].style.backgroundColor = '#f1f1f1'; // Part 3
+                    } else if (status === 3) {
+                        parts[0].style.backgroundColor = '#4caf50'; // Part 1
+                        parts[1].style.backgroundColor = '#4caf50'; // Part 2
+                        parts[2].style.backgroundColor = '#4caf50'; // Part 3
+                    } else {
+                        // Reset progress bar if input is not 1, 2, or 3
+                        parts.forEach(function(part) {
+                            part.style.display = 'none'; // Hide the progress bar
+                        });
+                    }
+                }
+
+            
+                // Call updateProgressBar with the application_status value
+                updateProgressBar("{{ application_status }}");
+            </script>
+            
     </body>
 </html>
