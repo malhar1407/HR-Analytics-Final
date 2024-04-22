@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVP Results</title>
+</head>
+<body>
+    <h1>AVP Results</h1>
+    
+    <!-- Display plots -->
+    <h2>Plots</h2>
+    <div>
+        {% for plot_id in plot_ids %}
+            <img src="/AVP/plot/{{ plot_id }}" alt="Plot {{ loop.index }}">
+        {% endfor %}
+    </div>
+    
+    <!-- Display employee ID predictions table -->
+    <h2>Employee ID Predictions</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Predicted Promotion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prediction in predictions %}
+            <tr>
+                <td>{{ prediction.employee_id }}</td>
+                <td>{{ prediction.predicted_promotion }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
