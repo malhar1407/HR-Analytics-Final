@@ -1,4 +1,4 @@
-pandas
+    pandas
 numpy 
 seaborn
 flask
@@ -16,6 +16,7 @@ scikit-learn==1.2.2
 torch
 frontend
 streamlit
+tools
 textblob
 imblearn
 
