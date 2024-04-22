@@ -190,7 +190,7 @@ def download_resume(candidate_id):
         # Return the file as a downloadable attachment
         return send_file(resume_file, download_name=resume_filename, as_attachment=True)
     else:
-        return 'Resume not found for employee ID: {}'.format(emp_id), 404
+        return 'Resume not found for employee ID: {}'.format(candidate_id), 404
 
 
 # Route to download cover letter
@@ -209,7 +209,7 @@ def download_cover_letter(candidate_id):
         # Return the file as a downloadable attachment
         return send_file(cover_letter_file, as_attachment=True, download_name=cover_letter_filename)
     else:
-        return 'Cover letter not found for employee ID: {}'.format(emp_id), 404
+        return 'Cover letter not found for employee ID: {}'.format(candidate_id), 404
 
 # Route for candidate login page
 @app.route('/login_candidate')
