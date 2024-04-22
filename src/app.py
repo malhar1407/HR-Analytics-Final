@@ -278,10 +278,6 @@ def reject_candidate(candidate_id):
         {'$set': data}
     )
     return redirect(url_for('hr_dashboard'))
-    
-
-
-        return 'Cover letter not found for employee ID: {}'.format(candidate_id), 404
 
 # Route for candidate login page
 @app.route('/login_candidate')
