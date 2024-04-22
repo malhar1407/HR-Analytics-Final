@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result</title>
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr)); /* Use minmax to allow flexbox to shrink if needed */
+            gap: 20px; /* Adjust the gap between plots */
+            margin: auto; /* Center the container horizontally */
+            max-width: 1200px; /* Limit the maximum width of the container */
+        }
+        .plot-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #ccc;
+            height: 100%; /* Ensure the plot container takes up the full height */
+            padding: 0; /* Remove padding */
+            margin: 0; /* Remove margin */
+        }
+        .plot-container img {
+            width: 100%; /* Make sure the plot fills its container */
+            height: auto; /* Maintain aspect ratio */
+        }
+    </style>
+</head>
+<body>
+    <h1>Analysis Result</h1>
+    
+    <!-- Display the plot per column -->
+    <div class="container">
+        {% for plot in plots %}
+        <div class="plot-container">
+            <img src="data:image/png;base64,{{ plot }}" alt="Plot Per Column Distribution">
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Display other analysis results -->
+    <div>
+        <h2>Other Analysis Results</h2>
+        <!-- Example: Sentiment Analysis Results -->
+        <h3>Sentiment Analysis:</h3>
+        <ul>
+            <li>Positive Reviews: {{ positive_reviews }}</li>
+            <li>Negative Reviews: {{ negative_reviews }}</li>
+            <li>Neutral Reviews: {{ neutral_reviews }}</li>
+        </ul>
+        <!-- You can add more analysis results here -->
+    </div>
+</body>
+</html>

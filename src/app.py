@@ -8,9 +8,13 @@ from Cover_Letter import final_cover_letter
 from datetime import datetime
 import pandas as pd
 from io import StringIO
-from Employee_Review import preprocess_text, get_sentiment
+from Employee_Review import get_plots, analyze_sentiments
+from Employee_Promotion import generate_graphs, Promotion_predictions
 from bson.binary import Binary
+from bson import ObjectId
 from io import BytesIO
+import io
+import base64
 
 def update_user_password(user_id, new_password):
     # MongoDB connection
@@ -51,6 +55,11 @@ resume_collection = db['resume']  # Collection to store resume data
 review_collection = db['Employee_Review']
 login_collection = db['Login_Details']  # Collection to store login details
 past_employees_collection = db['past_employees']  # Collection to store past employees
+plots_collection = db['Plots_Review']
+promotion_collection = db['Employee_Promotion']
+graph_collection = db['Plots_Promotion']
+predicted_collection = db['Predicted_Promotions']
+
 
 
 # Route for uploading resumes
@@ -309,6 +318,131 @@ def change_password():
 def change_password_page():
     if request.method == 'POST' or request.method == 'GET':
         return render_template('change_password.html')
+
+def read_csv_file(file):
+    df = pd.read_csv(file, delimiter=',', nrows=70000, encoding='latin1')
+    return df
+
+def convert_encoding_to_utf8(file):
+    # Read the content of the file and decode it from Latin1 to UTF-8
+    content = file.read().decode('latin1')
+    return content
+
+def get_plot_data(plot_id):
+    plot_data = plots_collection.find_one({'_id': plot_id})['plot_data']
+    plot_base64 = base64.b64encode(plot_data).decode()
+    return plot_base64
+
+@app.route('/upload_HR', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
+        
+        if file:
+            try:
+                df = read_csv_file(StringIO(convert_encoding_to_utf8(file)))
+                # Save data to MongoDB
+                records = df.to_dict(orient='records')
+                review_collection.insert_many(records)
+                return jsonify({'message': 'File uploaded successfully'})
+            except Exception as e:
+                return jsonify({'error': str(e)})
+    
+    # If GET request, render the upload.html template
+    return render_template('test.html')
+
+@app.route('/analyze', methods=['POST','GET'])
+def analyze():
+    # Call the analyze_sentiments function from code.py
+    plot_ids = get_plots()
+    positive_reviews, negative_reviews, neutral_reviews= analyze_sentiments()
+
+    # Get plot data from MongoDB
+    plots = [get_plot_data(plot_id) for plot_id in plot_ids]
+
+    # Render the HTML template with analysis results
+    return render_template('test1.html', 
+                           positive_reviews=positive_reviews, 
+                           negative_reviews=negative_reviews, 
+                           neutral_reviews=neutral_reviews,
+                           plots=plots)
+
+
+def read_csv(file_promotion):
+    data = pd.read_csv(file_promotion)
+    return data
+
+
+def get_plot_ids_from_mongo():
+    # Fetch plot IDs from MongoDB
+    plot_ids = {}
+    plots = graph_collection.find()  # Use 'plots_collection' instead of 'graph_collection'
+    for plot in plots:
+        plot_id = str(plot.get('_id'))
+        plot_ids[plot_id] = plot_id  # Assuming you want to use plot ID as both key and value
+    return plot_ids
+
+def get_predictions_from_mongo():
+    # Fetch predictions from MongoDB
+    predictions = []
+    prediction_docs = predicted_collection.find()  # Assuming 'collection' is your MongoDB collection for predictions
+    for doc in prediction_docs:
+        employee_id = doc.get('employee_id')
+        predicted_promotion = doc.get('predicted_promotion')
+        predictions.append({'employee_id': employee_id, 'predicted_promotion': predicted_promotion})
+    return predictions
+
+@app.route('/upload_HR_AVP', methods=['GET', 'POST'])
+def upload_file_avp():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
+        
+        if file:
+            try:
+                # Read the content of the file
+                file_content = file.read().decode('utf-8')
+                data = read_csv(StringIO(file_content))
+                # Save data to MongoDB
+                records = data.to_dict(orient='records')
+                promotion_collection.insert_many(records)
+                return jsonify({'message': 'File uploaded successfully'})
+            except Exception as e:
+                return jsonify({'error': str(e)})
+    
+    # If GET request, render the upload.html template
+    return render_template('test3.html')
+
+
+
+@app.route('/AVP', methods=['POST','GET'])
+def analyze_AVP():
+    plot_id = generate_graphs()  # Generate plots and get their IDs
+    prediction = Promotion_predictions()
+    # Fetch plot IDs and predictions from MongoDB
+    plot_ids = get_plot_ids_from_mongo()
+    predictions = get_predictions_from_mongo()
+    
+    # Render a template to display the generated plots and predictions
+    return render_template('test2.html', plot_ids=plot_ids, predictions=predictions)
+
+@app.route('/AVP/plot/<plot_id>')
+def plot(plot_id):
+    plot = graph_collection.find_one({'_id': ObjectId(plot_id)})
+    if plot:
+        return send_file(io.BytesIO(plot['image']), mimetype='image/png')
+    else:
+        return 'Plot not found', 404
+
 
 if __name__ == '__main__':
     streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
