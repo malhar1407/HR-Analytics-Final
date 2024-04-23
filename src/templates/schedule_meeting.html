@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Meeting</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Schedule Meeting</h1>
+        
+        <!-- Display candidate data -->
+        <h2>Candidate Details</h2>
+        <table class="table table-dark table-striped" border="1">
+            <thead>
+                <tr>
+                    <th>Resume File Name</th>
+                    <th>Cover Letter File Name</th>
+                    <th>Name</th>
+                    <th>Contact Info</th>
+                    <th>Email</th>
+                    <th>Skills</th>
+                    <th>Cultural Fit</th>
+                    <th>Upload Date</th> 
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ candidate.resume_name }}</td>
+                    <td>{{ candidate.cover_letter_name }}</td>
+                    <td>{{ candidate.name }}</td>
+                    <td>{{ candidate.contact_info }}</td>
+                    <td>{{ candidate.email }}</td>
+                    <td>
+                        <ul>
+                            {% for skill in candidate.skills %}
+                            <li>{{ skill }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ '%.2f' % candidate.cultural_fit }}</td>
+                    <td>{{ candidate.upload_date }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Schedule meeting form -->
+        <h2>Schedule Meeting</h2>
+<form method="POST" action="/schedule_meeting/{{ candidate.cand_id }}">
+    <div class="form-group">
+        <label for="link">Meeting Link:</label>
+        <input type="text" class="form-control" id="link" name="link" required placeholder="{{ previous_meeting.link }}">
+    </div>
+    <div class="form-group">
+        <label for="time">Time of Meeting:</label>
+        <input type="datetime-local" class="form-control" id="time" name="time" required placeholder="{{ previous_meeting.time }}">
+    </div>
+    <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea class="form-control" id="description" name="description" rows="3" required placeholder="{{ previous_meeting.description }}"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+    </div>
+</body>
+</html>

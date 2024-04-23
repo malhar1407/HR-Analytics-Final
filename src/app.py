@@ -5,10 +5,17 @@ import subprocess
 from resume_parsing import parse_resume
 from Cover_Letter import final_cover_letter
 from datetime import datetime
+import pandas as pd
+from io import StringIO
+from Employee_Review import get_plots, analyze_sentiments
+from Employee_Promotion import generate_graphs, Promotion_predictions
 from bson.binary import Binary
+from bson import ObjectId
 from io import BytesIO
 from tempfile import NamedTemporaryFile
 
+import io
+import base64
 
 def update_user_password(user_id, new_password):
     # MongoDB connection
@@ -52,16 +59,6 @@ def get_user_password(user_id):
             mongo_client.close()
             return user_password 
     
-def generate_candidate_id():
-    # Fetch the latest candidate ID from the database and increment it by 1
-    latest_candidate = login_collection_candidate.find_one(sort=[("cand_id", -1)])
-    if latest_candidate:
-        latest_candidate_id = int(latest_candidate['cand_id'][1:])
-        new_candidate_id = 'C' + str(latest_candidate_id + 1).zfill(5)  # Increment and pad with zeros
-    else:
-        new_candidate_id = 'C00001'  # Initial candidate ID if no candidates exist yet
-    return new_candidate_id
-
 # Function to generate a sequential employee ID
 def generate_emp_id():
     # Fetch the latest employee ID from the database and increment it by 1
@@ -72,6 +69,18 @@ def generate_emp_id():
     else:
         new_emp_id = '00001'  # Initial employee ID if no employees exist yet
     return new_emp_id
+
+def generate_candidate_id():
+    # Fetch the latest candidate ID from the database and increment it by 1
+    latest_candidate = login_collection_candidate.find_one(sort=[("cand_id", -1)])
+    if latest_candidate:
+        latest_candidate_id = int(latest_candidate['cand_id'][1:])
+        new_candidate_id = 'C' + str(latest_candidate_id + 1).zfill(5)  # Increment and pad with zeros
+    else:
+        new_candidate_id = 'C00001'  # Initial candidate ID if no candidates exist yet
+    return new_candidate_id
+
+
 
 
 
@@ -84,9 +93,17 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 mongo_client = MongoClient("mongodb://localhost:27017")
 db = mongo_client['Project']  # Replace 'Project' with your actual database name
 resume_collection = db['resume']  # Collection to store resume data
+review_collection = db['Employee_Review']
 login_collection = db['Login_Details']  # Collection to store login details
 past_employees_collection = db['past_employees']  # Collection to store past employees
 login_collection_candidate = db['candidate'] # Collection to store candidates
+plots_collection = db['Plots_Review']
+promotion_collection = db['Employee_Promotion']
+graph_collection = db['Plots_Promotion']
+predicted_collection = db['Predicted_Promotions']
+
+rejected_candidate = db['rejected_candidate'] # Collection to store rejected candidates
+
 feedback_collection = db['Feedback']  # Collection to store feedback
 
 # Route for uploading resumes
@@ -96,6 +113,7 @@ def upload_files():
         # Get the list of uploaded resumes and cover letters
         uploaded_resumes = request.files.getlist('resumes')
         uploaded_cover_letters = request.files.getlist('cover_letter')
+        
         
 
         # Process uploaded resumes and cover letters
@@ -119,9 +137,10 @@ def upload_files():
                 pdf_name, name, contact_info, email, main_domain, years_experience, skills, upload_date = parse_resume(resume_file_path)
                 cultural_fit = final_cover_letter(cover_letter_file_path)
                 
+                name = name.upper()
                 # Insert resume and cover letter data into MongoDB
                 resume_data = {
-                    'candidate_id':session.get('emp_id'),
+                    'cand_id':session.get('emp_id'),
                     'resume_name': pdf_name,
                     'resume_content': Binary(resume_content),
                     'cover_letter_name': cover_letter_file.filename,
@@ -131,9 +150,7 @@ def upload_files():
                     'email': email,
                     'skills': list(skills),
                     'cultural_fit': cultural_fit,
-                    'upload_date': upload_date,
-                    'main_domain': main_domain,  
-                    'years_experience': years_experience
+                    'upload_date': upload_date
                 }
                 resume_collection.insert_one(resume_data)
 
@@ -162,16 +179,46 @@ def upload_files():
 @app.route('/candidate')
 def candidate_dashboard():
     # Check if the candidate has uploaded documents
-    uploaded_documents = resume_collection.find_one({'candidate_id': session.get('emp_id')})
+    uploaded_documents = resume_collection.find_one({'cand_id': session.get('emp_id')})
     
     if uploaded_documents:
-        upload_date = uploaded_documents['upload_date']
-    else:
-        upload_date = None
+        application_status = 0
+        
+        if 'status' in uploaded_documents:
+            application_status = 3
+        elif 'link' in uploaded_documents:
+            application_status = 2
+        else:
+            application_status = 1
 
-    response = make_response(render_template('Candash.html', upload_date=upload_date))
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    return response
+        upload_date = uploaded_documents.get('upload_date', None)
+        
+        # Fetch Meeting Details
+        meeting_info = {
+            'link': uploaded_documents.get('link'),
+            'description': uploaded_documents.get('description'),
+            'time': uploaded_documents.get('time')
+        }
+    else:
+        application_status = 0
+        upload_date = None
+        meeting_info = None
+
+    # Sending the Status if the result is announced
+    if application_status == 3:
+        status = uploaded_documents.get('status')
+        response = make_response(render_template('Candash.html', upload_date=upload_date, meeting_info=meeting_info, application_status=application_status, status=status))
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
+    else:
+        response = make_response(render_template('Candash.html', upload_date=upload_date, meeting_info=meeting_info, application_status=application_status))
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
+
+    
+    
+
+
 #Route for employees login page
 @app.route('/login')
 def login():
@@ -195,6 +242,7 @@ def download_resume(candidate_id):
         return send_file(resume_file, download_name=resume_filename, as_attachment=True)
     else:
         return 'Resume not found for employee ID: {}'.format(candidate_id), 404
+        
 
 
 # Route to download cover letter
@@ -215,6 +263,36 @@ def download_cover_letter(candidate_id):
     else:
         return 'Cover letter not found for employee ID: {}'.format(candidate_id), 404
 
+# Route to accept candidates
+@app.route('/accept_candidate/<candidate_id>')
+def accept_candidate(candidate_id):
+    print(candidate_id)
+    data = {
+        'status': 'Congratulations! You have been accepted. The HR will contact you soon regarding the details of joining.'
+    }
+    resume_collection.update_one(
+        {'cand_id': candidate_id},
+        {'$set': data}
+    )
+    return redirect(url_for('hr_dashboard'))
+    
+
+# Route to reject candidates
+@app.route('/reject_candidate/<candidate_id>')
+def reject_candidate(candidate_id):
+    candidate_id = candidate_id
+    reason = request.args.get('reason')
+    data = {
+        'status': 'Sorry! We have decided not to continue forward with you. We will contact you if a position opens up in the future.',
+        'reason': reason
+    }
+    resume_collection.update_one(
+        {'cand_id': candidate_id},
+        {'$set': data}
+    )
+    return redirect(url_for('hr_dashboard'))
+        
+
 # Route for candidate login page
 @app.route('/login_candidate')
 def login_candidate():
@@ -233,9 +311,7 @@ def validate():
             session['emp_id'] = candidate_id
             session['designation'] = login_data.get('designation')
             session['name'] = login_data.get('name')
-            print(session['emp_id'])
-            print(session['designation'])
-            print(session['name'])
+    
             
             if session['designation'] == 'HR':
                 return redirect(url_for('hr_dashboard'))
@@ -530,8 +606,170 @@ def empfeed():
         
         return render_template('empfeed.html', questions=questions)
 
+def read_csv_file(file):
+    df = pd.read_csv(file, delimiter=',', nrows=70000, encoding='latin1')
+    return df
+
+def convert_encoding_to_utf8(file):
+    # Read the content of the file and decode it from Latin1 to UTF-8
+    content = file.read().decode('latin1')
+    return content
+
+def get_plot_data(plot_id):
+    plot_data = plots_collection.find_one({'_id': plot_id})['plot_data']
+    plot_base64 = base64.b64encode(plot_data).decode()
+    return plot_base64
+
+@app.route('/upload_HR', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
+        
+        if file:
+            try:
+                df = read_csv_file(StringIO(convert_encoding_to_utf8(file)))
+                # Save data to MongoDB
+                records = df.to_dict(orient='records')
+                review_collection.insert_many(records)
+                return jsonify({'message': 'File uploaded successfully'})
+            except Exception as e:
+                return jsonify({'error': str(e)})
+    
+    # If GET request, render the upload.html template
+    return render_template('test.html')
+
+@app.route('/analyze', methods=['POST','GET'])
+def analyze():
+    # Call the analyze_sentiments function from code.py
+    plot_ids = get_plots()
+    positive_reviews, negative_reviews, neutral_reviews= analyze_sentiments()
+
+    # Get plot data from MongoDB
+    plots = [get_plot_data(plot_id) for plot_id in plot_ids]
+
+    # Render the HTML template with analysis results
+    return render_template('test1.html', 
+                           positive_reviews=positive_reviews, 
+                           negative_reviews=negative_reviews, 
+                           neutral_reviews=neutral_reviews,
+                           plots=plots)
+
+
+def read_csv(file_promotion):
+    data = pd.read_csv(file_promotion)
+    return data
+
+
+def get_plot_ids_from_mongo():
+    # Fetch plot IDs from MongoDB
+    plot_ids = {}
+    plots = graph_collection.find()  # Use 'plots_collection' instead of 'graph_collection'
+    for plot in plots:
+        plot_id = str(plot.get('_id'))
+        plot_ids[plot_id] = plot_id  # Assuming you want to use plot ID as both key and value
+    return plot_ids
+
+def get_predictions_from_mongo():
+    # Fetch predictions from MongoDB
+    predictions = []
+    prediction_docs = predicted_collection.find()  # Assuming 'collection' is your MongoDB collection for predictions
+    for doc in prediction_docs:
+        employee_id = doc.get('employee_id')
+        predicted_promotion = doc.get('predicted_promotion')
+        predictions.append({'employee_id': employee_id, 'predicted_promotion': predicted_promotion})
+    return predictions
+
+@app.route('/upload_HR_AVP', methods=['GET', 'POST'])
+def upload_file_avp():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
+        
+        if file:
+            try:
+                # Read the content of the file
+                file_content = file.read().decode('utf-8')
+                data = read_csv(StringIO(file_content))
+                # Save data to MongoDB
+                records = data.to_dict(orient='records')
+                promotion_collection.insert_many(records)
+                return jsonify({'message': 'File uploaded successfully'})
+            except Exception as e:
+                return jsonify({'error': str(e)})
+    
+    # If GET request, render the upload.html template
+    return render_template('test3.html')
+
+
+
+@app.route('/AVP', methods=['POST','GET'])
+def analyze_AVP():
+    plot_id = generate_graphs()  # Generate plots and get their IDs
+    prediction = Promotion_predictions()
+    # Fetch plot IDs and predictions from MongoDB
+    plot_ids = get_plot_ids_from_mongo()
+    predictions = get_predictions_from_mongo()
+    
+    # Render a template to display the generated plots and predictions
+    return render_template('test2.html', plot_ids=plot_ids, predictions=predictions)
+
+@app.route('/AVP/plot/<plot_id>')
+def plot(plot_id):
+    plot = graph_collection.find_one({'_id': ObjectId(plot_id)})
+    if plot:
+        return send_file(io.BytesIO(plot['image']), mimetype='image/png')
+    else:
+        return 'Plot not found', 404
+
+
+
+# Define route for scheduling a meeting
+@app.route('/schedule_meeting/<candidate_id>', methods=['GET', 'POST'])
+def schedule_meeting(candidate_id):
+    print("Candidate ID:", candidate_id)  # Debugging statement
+    
+    if request.method == 'POST':
+        # Get meeting details from the form
+        link = request.form['link']
+        time = request.form['time']
+        description = request.form['description']
+
+        data = {
+            'link' : link,
+            'description' : description,
+            'time' : time
+        }
+
+        resume_collection.update_one(
+            {'cand_id': candidate_id},
+            {'$set': data}
+        ) 
+       
+        return redirect(url_for('hr_dashboard'))
+    else:
+        # Fetch candidate data from MongoDB based on the candidate ID
+        candidate = resume_collection.find_one({'cand_id': candidate_id})
+        previous_meeting = {
+            'link': candidate.get('link'),
+            'description': candidate.get('description'),
+            'time': candidate.get('time')
+        }
+        if candidate:
+            return render_template('schedule_meeting.html', candidate=candidate, candidate_id=candidate_id,previous_meeting=previous_meeting)
+        else:
+            flash('Candidate not found')
+            return redirect(url_for('hr_dashboard'))
 if __name__ == '__main__':
-    # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)

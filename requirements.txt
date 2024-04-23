@@ -17,6 +17,9 @@ torch
 frontend
 streamlit
 tools
+textblob
+imblearn
+
 
 
 #-e .
