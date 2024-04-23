@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .message {
+            display: none;
+            margin-top: 10px;
+        }
+        .back-button {
+        background-color: #6b8096;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        }
+
+        .back-button:hover {
+            background-color: #3b4040;}
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;}
+    </style>
+</head>
+<body>
+    <nav>
+        <!-- <a href="{{ url_for('admin_dashboard') }}" class="back-button">
+            <button class="back-button">Back</button>
+        </a> -->
+        <button class="back-button" onclick="window.location.href = '/admin/dashboard';">Back</button>
+
+    </nav>
+    <div class="container mt-5">
+        <h2>Edit Questions</h2>
+        <form action="{{ url_for('save_questions') }}" method="post" id="editForm">
+            <div class="form-group">
+                <label for="question1">Question 1:</label>
+                <input type="text" class="form-control" id="question1" name="question1" value="{{ existing_questions.question1 }}">
+            </div>
+            <div class="form-group">
+                <label for="question2">Question 2:</label>
+                <input type="text" class="form-control" id="question2" name="question2" value="{{ existing_questions.question2 }}">
+            </div>
+            <div class="form-group">
+                <label for="question3">Question 3:</label>
+                <input type="text" class="form-control" id="question3" name="question3" value="{{ existing_questions.question3 }}">
+            </div>
+            <div class="form-group">
+                <label for="question4">Question 4:</label>
+                <input type="text" class="form-control" id="question4" name="question4" value="{{ existing_questions.question4 }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Questions</button>
+
+        </form>
+        <div class="message" id="successMessage">
+            <div class="alert alert-success" role="alert">
+                Questions have been saved successfully
+            </div>
+        </div>
+    </div>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#editForm').submit(function(event) {
+                // Prevent the default form submission
+                event.preventDefault();
+                // Submit the form using AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // Show the success message
+                        $('#successMessage').fadeIn().delay(2000).fadeOut();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

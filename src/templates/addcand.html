@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Candidate</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+         .back-button {
+        background-color: #6b8096;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        }
+
+        .back-button:hover {
+            background-color: #3b4040;}
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;}
+    </style>
+
+</head>
+<body>
+    <nav>
+        <!-- <a href="{{ url_for('admin_dashboard') }}" class="back-button">
+            <button class="back-button">Back</button>
+        </a> -->
+        <button class="back-button" onclick="window.location.href = '/admin/dashboard';">Back</button>
+
+    </nav>
+
+<div class="container mt-5">
+    <h2 class="text-center">Add Candidate</h2>
+
+    <form id="addCandidateForm" action="/admin/dashboard/add_candidate" method="post">
+        <div class="form-group">
+            <label for="candidate_id">Candidate ID:</label>
+            <input type="text" id="candidate_id" name="candidate_id" class="form-control" value="{{ candidate_id }}" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label for="designation">Designation:</label>
+            <input type="text" id="designation" name="designation" class="form-control" value="Candidate" readonly>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="text" id="password" name="password" class="form-control" value="Admin123@" readonly>
+        </div>
+        <button id="addCandidateButton" type="submit" class="btn btn-primary">Add Candidate</button>
+    </form>
+
+    <!-- Success message container -->
+    <div id="successMessage" class="alert alert-success mt-3" style="display: none;" role="alert">
+        Candidate added successfully!
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Handle form submission
+    $('#addCandidateForm').submit(function(event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        // Perform form submission using AJAX
+        $.ajax({
+            url: $(this).attr('action'),
+            method: $(this).attr('method'),
+            data: $(this).serialize(),
+            success: function(response) {
+                // Display success message
+                $('#successMessage').show();
+            },
+            error: function(xhr, status, error) {
+                // Handle error
+                console.error(xhr.responseText);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
