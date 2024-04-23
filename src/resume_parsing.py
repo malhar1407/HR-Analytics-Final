@@ -71,4 +71,3 @@ def parse_resume(pdf_path):
 
     # Return all extracted information
     return pdf_name, name, contact_info, email, skills, upload_date
-
