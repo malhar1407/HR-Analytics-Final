@@ -70,6 +70,17 @@ def generate_emp_id():
         new_emp_id = '00001'  # Initial employee ID if no employees exist yet
     return new_emp_id
 
+def generate_candidate_id():
+    # Fetch the latest candidate ID from the database and increment it by 1
+    latest_candidate = login_collection_candidate.find_one(sort=[("cand_id", -1)])
+    if latest_candidate:
+        latest_candidate_id = int(latest_candidate['cand_id'][1:])
+        new_candidate_id = 'C' + str(latest_candidate_id + 1).zfill(5)  # Increment and pad with zeros
+    else:
+        new_candidate_id = 'C00001'  # Initial candidate ID if no candidates exist yet
+    return new_candidate_id
+
+
 
 
 
@@ -93,6 +104,7 @@ predicted_collection = db['Predicted_Promotions']
 
 rejected_candidate = db['rejected_candidate'] # Collection to store rejected candidates
 
+feedback_collection = db['Feedback']  # Collection to store feedback
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
@@ -101,6 +113,7 @@ def upload_files():
         # Get the list of uploaded resumes and cover letters
         uploaded_resumes = request.files.getlist('resumes')
         uploaded_cover_letters = request.files.getlist('cover_letter')
+        
         
 
         # Process uploaded resumes and cover letters
@@ -121,7 +134,7 @@ def upload_files():
 
                 
                 # Parse resume and cover letter, and store information in MongoDB
-                pdf_name, name, contact_info, email, skills, upload_date = parse_resume(resume_file_path)
+                pdf_name, name, contact_info, email, main_domain, years_experience, skills, upload_date = parse_resume(resume_file_path)
                 cultural_fit = final_cover_letter(cover_letter_file_path)
                 
                 name = name.upper()
@@ -229,7 +242,7 @@ def download_resume(candidate_id):
         return send_file(resume_file, download_name=resume_filename, as_attachment=True)
     else:
         return 'Resume not found for employee ID: {}'.format(candidate_id), 404
-        return 'Resume not found for employee ID: {}'.format(candidate_id), 404
+        
 
 
 # Route to download cover letter
@@ -278,6 +291,7 @@ def reject_candidate(candidate_id):
         {'$set': data}
     )
     return redirect(url_for('hr_dashboard'))
+        
 
 # Route for candidate login page
 @app.route('/login_candidate')
@@ -491,7 +505,11 @@ def edit_employee():
             return render_template('editemp.html', employee=employee)
         else:
             flash('Employee not found')
-            return redirect(url_for('admin_dashboard'))
+            # Render the editemp.html template with the flashed message
+            return render_template('editemp.html', flash_message='Employee not found')
+    else:
+        return render_template('editemp.html', employee=None)
+
 
 # Route for saving employee changes
 @app.route('/admin/dashboard/save_employee_changes', methods=['POST'])
@@ -513,6 +531,80 @@ def save_employee_changes():
             flash('Failed to save changes. Employee not found or no changes made.', 'error')
         
         return redirect(url_for('admin_dashboard'))
+    
+
+
+# Route for rendering addcand.html and handling candidate addition
+@app.route('/admin/dashboard/addcand')
+def add_candidate_page():
+    candidate_id = generate_candidate_id()  # Generate candidate ID
+    return render_template('addcand.html', candidate_id=candidate_id)
+
+from flask import jsonify
+
+# Route for adding candidate
+@app.route('/admin/dashboard/add_candidate', methods=['POST'])
+def add_candidate():
+    if request.method == 'POST':
+        # Generate candidate ID
+        candidate_id = generate_candidate_id()
+
+        # Add candidate to MongoDB
+        candidate_data = {
+            'cand_id': candidate_id,
+            'designation': 'Candidate',
+            'password': 'Admin123@'
+        }
+        login_collection_candidate.insert_one(candidate_data)
+
+        # Return a JSON response indicating success
+        return jsonify({'success': True})
+
+    # Handle other HTTP methods or invalid requests
+    return jsonify({'error': 'Invalid request'}), 400
+
+@app.route('/admin/dashboard/edform')
+def edit_form():
+    # Fetch existing questions from the Feedback collection
+    existing_questions = feedback_collection.find_one({}, {'_id': 0})
+    return render_template('editform.html', existing_questions=existing_questions)
+
+@app.route('/admin/dashboard/save_questions', methods=['POST'])
+def save_questions():
+    if request.method == 'POST':
+        # Get the submitted form data
+        question1 = request.form['question1']
+        question2 = request.form['question2']
+        question3 = request.form['question3']
+        question4 = request.form['question4']
+        
+        # Update the existing entry in the database
+        feedback_collection.update_one({}, {'$set': {'question1': question1, 'question2': question2, 'question3': question3, 'question4': question4, 'timestamp': datetime.now()}})
+        
+        # Assuming you have saved the questions successfully, display a success message
+        flash('Questions have been saved successfully', 'success')
+        
+        # Redirect the admin back to the admin dashboard
+        return redirect(url_for('admin_dashboard'))
+    
+@app.route('/empfeed', methods=['GET', 'POST'])
+def empfeed():
+    if request.method == 'POST':
+        # Handle form submission
+        feedback = {}
+        for key, value in request.form.items():
+            feedback[key] = value
+        
+        # Save feedback to MongoDB
+        feedback_collection.insert_one(feedback)
+        
+        # Optionally, redirect to a thank you page
+        return render_template('thank_you.html')
+    else:
+        # Retrieve questions from MongoDB
+        questions = feedback_collection.find_one()  # Assuming there's only one document with questions
+        
+        return render_template('empfeed.html', questions=questions)
 
 def read_csv_file(file):
     df = pd.read_csv(file, delimiter=',', nrows=70000, encoding='latin1')

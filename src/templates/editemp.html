@@ -6,8 +6,37 @@
     <title>Edit Employee</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+         .back-button {
+        background-color: #6b8096;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        }
+
+        .back-button:hover {
+            background-color: #3b4040;}
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }    
+    </style>
 </head>
 <body>
+    <nav>
+        <!-- <a href="{{ url_for('admin_dashboard') }}" class="back-button">
+            <button class="back-button">Back</button>
+        </a> -->
+        <button class="back-button" onclick="window.location.href = '/admin/dashboard';">Back</button>
+
+    </nav>
 
 <div class="container mt-5">
     <h2 class="text-center">Edit Employee</h2>
@@ -23,6 +52,10 @@
     <form action="{{ url_for('save_employee_changes') }}" method="POST">
         <input type="hidden" name="emp_id" value="{{ employee.emp_id }}">
         <div class="form-group">
+            <label for="emp_id">Employee ID</label>
+            <input type="text" class="form-control" id="emp_id" name="emp_id" value="{{ employee.emp_id }}" readonly>
+        </div>
+        <div class="form-group">
             <label for="name">Name</label>
             <input type="text" class="form-control" id="name" name="name" value="{{ employee.name }}" required>
         </div>
@@ -32,14 +65,18 @@
         </div>
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ employee.email }}" required>
+            <input type="email" class="form-control" id="email" name="email" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" value="{{ employee.email }}" required>
         </div>
         <div class="form-group">
             <label for="phone">Phone</label>
-            <input type="text" class="form-control" id="phone" name="phone" value="{{ employee.phone }}">
+            <input type="text" class="form-control" id="phone" name="phone" pattern="[0-9]{10}" title="Please enter a 10-digit phone number" value="{{ employee.phone }}">
         </div>
         <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
+    {% elif request.method == 'POST' %}
+    <div class="alert alert-danger" role="alert">
+        Employee not found. Please enter a valid Employee ID.
+    </div>
     {% endif %}
 </div>
 

@@ -6,19 +6,51 @@
     <title>HR Dashboard</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
-        .task-bar {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+      #sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Hide the sidebar by default */
+            height: 100%;
+            width: 250px;
+            background-color: rgba(52, 58, 64, 0.9); /* Dark gray color with 90% opacity */
+            padding-top: 55px; /* Space for the navbar */
+            transition: all 0.3s;
+            z-index: 1000;
         }
-        .task-bar-logo {
+
+        /* Style for sidebar buttons */
+        #sidebar .list-unstyled.components li {
+            padding-top: 10px; /* Adjust the padding as needed */
+        }
+
+        /* Show the sidebar when active */
+        #sidebar.active {
+            left: 0;
+        }
+
+        /* Toggle button style */
+        #sidebarCollapse {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Align to top left corner */
+            cursor: pointer;
+            z-index: 2000;
+            color: white; /* Set the color to white */
+        }
+        .navbar-brand {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Make the sidebar icon larger */
+        #sidebarCollapse i {
             font-size: 24px;
-            margin-right: 10px;
         }
+        
         .task-bar-buttons {
             display: flex;
             align-items: center;
@@ -39,20 +71,38 @@
     </style>
 </head>
 <body>
-    <!-- Taskbar -->
-    <div class="task-bar">
-        <div class="task-bar-logo">{{ session['name'] }}</div>
+    <!-- Sidebar -->
+        <div id="sidebar">
+            <ul class="list-unstyled components">
+                <li>
+                    <a href="{{ url_for('upload_file') }}" class="btn btn-dark btn-block">Upload File</a>
+                </li>
+                
+            </ul>
+        </div>
+    
+    <!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Sidebar toggle button -->
+    <button id="sidebarCollapse" class="btn btn-dark">
+        <i class="fas fa-bars"></i>
+    </button>
+    <!-- Centered title -->
+    <a class="navbar-brand mx-auto" >HR Dashboard</a>
+    <!-- Move buttons to the right -->
+    <div class="navbar-collapse justify-content-end">
         <div class="task-bar-buttons">
             <!-- Change Password Button -->
             <form method="POST" action="/change_password_page">
-                <button type="submit">Change Password</button>
+                <button type="submit" class="btn btn-dark">Change Password</button>
             </form>
             <!-- Logout Button -->
             <form method="POST" action="/logout">
-                <button type="submit">Logout</button>
+                <button type="submit" class="btn btn-dark">Logout</button>
             </form>
         </div>
     </div>
+</nav>
 
     <div class="container">
         <h1 class="mt-4">HR Dashboard</h1>
@@ -105,12 +155,12 @@
         </table>
     </div>
 
-    
-
-
-    
-
     <!-- JavaScript -->
+    <!-- Bootstrap JS (optional) -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- jQuery (optional) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script>
     function acceptCandidate(candidateId) {
         window.location.href = '/accept_candidate/' + candidateId;
@@ -127,17 +177,16 @@
     function scheduleMeeting(candidateId) {
         window.location.href = '/schedule_meeting/' + candidateId;
     }
+
+    // Sidebar toggle functionality
+    $(document).ready(function () {
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').toggleClass('active');
+        });
+    });
 </script>
 
 
 
-
-    </script>
-
-    <!-- Bootstrap JS (optional) -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- jQuery (optional) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    
 </body>
 </html>

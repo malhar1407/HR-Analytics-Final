@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Feedback</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Employee Feedback</h2>
+        <form action="/empfeed" method="post">
+            <!-- Display only specific fields -->
+            <div class="form-group">
+                <label for="question1">{{ questions.question1 }}</label>
+                <input type="text" class="form-control" id="question1" name="question1" required>
+            </div>
+            <div class="form-group">
+                <label for="question2">{{ questions.question2 }}</label>
+                <input type="text" class="form-control" id="question2" name="question2" required>
+            </div>
+            <div class="form-group">
+                <label for="question3">{{ questions.question3 }}</label>
+                <input type="text" class="form-control" id="question3" name="question3" required>
+            </div>
+            <div class="form-group">
+                <label for="question4">{{ questions.question4 }}</label>
+                <input type="text" class="form-control" id="question4" name="question4" required>
+            </div>
+            <!-- End of specific fields -->
+            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+        </form>
+    </div>
+</body>
+</html>
