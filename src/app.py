@@ -134,7 +134,7 @@ def upload_files():
 
                 
                 # Parse resume and cover letter, and store information in MongoDB
-                pdf_name, name, contact_info, email, main_domain, years_experience, skills, upload_date = parse_resume(resume_file_path)
+                pdf_name, domain, name, contact_info, email, skills, upload_date = parse_resume(resume_file_path)
                 cultural_fit = final_cover_letter(cover_letter_file_path)
                 
                 name = name.upper()
@@ -149,6 +149,7 @@ def upload_files():
                     'contact_info': contact_info,
                     'email': email,
                     'skills': list(skills),
+                    'domain': domain,
                     'cultural_fit': cultural_fit,
                     'upload_date': upload_date
                 }
@@ -769,7 +770,7 @@ def schedule_meeting(candidate_id):
             flash('Candidate not found')
             return redirect(url_for('hr_dashboard'))
 if __name__ == '__main__':
-    streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
