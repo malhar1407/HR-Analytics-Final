@@ -5,6 +5,15 @@ import fitz
 import pandas as pd
 from datetime import datetime
 import re
+import string
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+import joblib
 
 # Preprocess the Skills Data
 skills_csv_path = r"D:\HR-Analytics-Final\src\skills2.csv"  # Path to your skills dataset CSV file
@@ -20,6 +29,36 @@ def extract_text_from_pdf(pdf_file):
     for page in doc:
         text += page.get_text()
     return text.lower()  # Convert text to lowercase for case-insensitive matching
+
+# Function for text preprocessing
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
+
+def preprocess_text(text):
+    text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"https?://\S+|www\.\S+", " ", text)
+    text = re.sub(r"<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});", " ", text)
+    text = re.sub(r"\b(?:\d{3}[-.\s]??\d{3}[-.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-.\s]??\d{4}|\d{3}[-.\s]??\d{4})\b", " ", text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    text = re.sub(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", " ", text)
+    text = re.sub(r"[^a-zA-Z\s]", " ", text)
+    tokens = word_tokenize(text)
+    tokens = [word for word in tokens if word not in stop_words]
+    tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    preprocessed_text = ' '.join(tokens)
+    return preprocessed_text
+
+# Define the TF-IDF vectorizer
+tfidf_vectorizer = TfidfVectorizer()
+
+# Define the Multinomial Naive Bayes classifier with the best parameters
+best_nb_classifier = MultinomialNB(alpha=0.1)
+
+# Define the pipeline with the TF-IDF vectorizer and Multinomial Naive Bayes classifier
+best_nb_pipeline = Pipeline([
+    ('tfidf', tfidf_vectorizer),
+    ('clf', best_nb_classifier)
+])
 
 # Function to extract skills from resume
 def extract_skills_from_resume(resume_text):
@@ -61,13 +100,36 @@ def extract_info_from_resume(pdf_path):
     upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Current date-time stamp
     return pdf_name, name, contact_info, email, skills, upload_date
 
+
+def extract_domain(pdf_path):
+    # Load the label encoder used during model training
+    label_encoder = joblib.load(r'D:\HR-Analytics-Final\models\label_encoder_final.pkl')  # Load your label encoder object
+
+    # Load the trained model
+    loaded_model = joblib.load(r'D:\HR-Analytics-Final\models\best_nb_pipeline.pkl')
+
+    # Extract text from the PDF
+    pdf_text = extract_text_from_pdf(pdf_path)
+
+    # Preprocess the extracted text
+    preprocessed_pdf_text = preprocess_text(pdf_text)
+
+    # Make prediction using the loaded model
+    predicted_domain_number = loaded_model.predict([preprocessed_pdf_text])
+
+    # Convert the predicted domain number to domain name
+    predicted_domain_name = label_encoder.inverse_transform(predicted_domain_number)
+    predicted_domain = str(predicted_domain_name)
+    domain = re.sub(r"[\[\]']", "", predicted_domain)
+    return domain
+
 # Main function to parse resume and extract information
 def parse_resume(pdf_path):
     # Parse resume and extract relevant information
     pdf_name, name, contact_info, email, skills, upload_date = extract_info_from_resume(pdf_path)
-
+    domain = extract_domain(pdf_path)
     # Get the current date and time as the upload date
     upload_date = datetime.now()
 
     # Return all extracted information
-    return pdf_name, name, contact_info, email, skills, upload_date
+    return pdf_name, domain, name, contact_info, email, skills, upload_date

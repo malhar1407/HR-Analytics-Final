@@ -135,7 +135,7 @@ def upload_files():
 
                 
                 # Parse resume and cover letter, and store information in MongoDB
-                pdf_name, name, contact_info, email, main_domain, years_experience, skills, upload_date = parse_resume(resume_file_path)
+                pdf_name, domain, name, contact_info, email, skills, upload_date = parse_resume(resume_file_path)
                 cultural_fit = final_cover_letter(cover_letter_file_path)
                 
                 name = name.upper()
@@ -150,6 +150,7 @@ def upload_files():
                     'contact_info': contact_info,
                     'email': email,
                     'skills': list(skills),
+                    'domain': domain,
                     'cultural_fit': cultural_fit,
                     'upload_date': upload_date
                 }
