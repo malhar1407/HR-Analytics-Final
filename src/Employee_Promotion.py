@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
@@ -231,21 +233,3 @@ def Promotion_predictions():
     predictions = promotion_predictions(prediction_csv)
     save_to_mongodb(predictions)
     return predictions
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
