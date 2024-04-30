@@ -7,11 +7,16 @@
     <style>
         .container {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr)); /* Use minmax to allow flexbox to shrink if needed */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust container width */
             gap: 20px; /* Adjust the gap between plots */
             margin: auto; /* Center the container horizontally */
-            max-width: 1200px; /* Limit the maximum width of the container */
+            max-width: 1500px; /* Limit the maximum width of the container */
         }
+
+        .department-container {
+            margin-bottom: 40px; /* Add some space between department containers */
+        }
+
         .plot-container {
             display: flex;
             flex-direction: column;
@@ -20,9 +25,11 @@
             height: 100%; /* Ensure the plot container takes up the full height */
             padding: 0; /* Remove padding */
             margin: 0; /* Remove margin */
+            width: 100%;
         }
+
         .plot-container img {
-            width: 100%; /* Make sure the plot fills its container */
+            max-width: 100%; /* Make sure the plot fits within its container */
             height: auto; /* Maintain aspect ratio */
         }
     </style>
@@ -32,10 +39,27 @@
     
     <!-- Display the plot per column -->
     <div class="container">
+        {% set processed_plots = [] %}
         {% for plot in plots %}
-        <div class="plot-container">
-            <img src="data:image/png;base64,{{ plot }}" alt="Plot Per Column Distribution">
-        </div>
+            {% if plot not in processed_plots %}
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ plot }}" alt="Plot Per Column Distribution">
+                </div>
+                {% set _ = processed_plots.append(plot) %}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <!-- Display department-wise plots -->
+    <h2>Department-wise Distribution</h2>
+    <div class="container">
+        {% set processed_department_plots = [] %}
+        {% for department_plot in department_plots %}
+            {% if department_plot not in processed_department_plots %}
+                <div class="plot-container">
+                    <img src="data:image/png;base64,{{ department_plot }}" alt="Department-wise Distribution">
+                </div>
+                {% set _ = processed_department_plots.append(department_plot) %}
+            {% endif %}
         {% endfor %}
     </div>
 

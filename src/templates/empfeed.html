@@ -7,7 +7,336 @@
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #095a5f;
+    margin: 0;
+    padding: 0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color:  #f5f5dc ;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+    .dashboard-section {
+        margin-bottom: 20px;
+    }
+    .section-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+        text-align: center;
+        color: #444;
+    }
+    .meetings, .documents {
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .status{
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%; /* Set the width to 100% */
+        max-width: 800px; /* Set a maximum width if needed */
+        margin: 0 auto; /* Center the element horizontally */
+    }
+    p {
+        margin: 10px 0;
+        line-height: 1.5;
+    }
+    .upload-options {
+        margin-bottom: 10px;
+    }
+    .upload-button {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    .upload-button:hover {
+        background-color: #45a049;
+    }
+   
+    /* .submit-button {
+        display: block;
+        margin: 20px auto;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    .submit-button:hover {
+        background-image: linear-gradient(to right, #66BB6A 0%, #43A047 100%);
+
+    }
+    .submit-button:active {
+        background-image: linear-gradient(to right, #388E3C 0%, #2E7D32 100%);
+    } */
+    .submit-button {
+            display: block;
+            margin: 20px auto;
+            background-image: linear-gradient(to right, #4c82af 20%, #4a8bc3 80%);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: 1px solid #3E8E41;
+            border-radius: 5px;
+            font-family: 'Roboto', sans-serif;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+            }
+
+
+
+
+    .submit-button:hover {
+            background-color: #577c9c;
+            border-color: #38803B;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+
+
+
+
+    .submit-button::after {
+            content: "\f058"; /* Font Awesome for checkmark icon */
+            font-family: "Font Awesome 5 Free";
+            font-size: 16px;
+            margin-left: 10px;
+            }
+    .custom-box {
+        background-color: #001F3F; /* Blue background color */
+        color:#ffffff; /* White text color */
+        padding: 10px; /* Padding around the text */
+        border-radius: 5px; /* Rounded corners */
+        text-align: center; /* Center-align text */}
+
+
+    .task-bar {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;}
+
+    .task-bar-logo {
+        font-size: 24px;
+        margin-right: auto;}
+
+    .dropdown {
+        position: relative;
+        display: inline-block;}
+
+    .dropdown-content {
+        display: none;
+        position: relative;
+        background-color: #f9f9f9;
+        min-width: 120px;
+        z-index: 1;
+        border-radius: 5px;}
+
+    .dropdown-content a {
+        color: #333;
+        padding: 10px;
+        text-decoration: none;
+        display: block;}
+
+    .dropdown-content a:hover {
+        background-color: #ddd;}
+
+    .dropdown:hover .dropdown-content {
+        display: block;}
+
+    .dropdown:hover .dropbtn {
+        background-color: #555;}
+
+        .task-bar {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .task-bar-logo {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .task-bar-buttons {
+            display: flex;
+            align-items: center;
+        }
+    .task-bar-buttons button {
+            margin-left: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .task-bar-button {
+margin-left: 10px;
+background-color: #4CAF50;
+color: white;
+padding: 10px 20px;
+text-decoration: none;
+border-radius: 5px;
+border: none;
+cursor: pointer;
+}
+
+.task-bar-button:hover {
+background-color: #45a049;
+}
+    .task-bar-buttons button:hover {
+            background-color: #45a049;
+        }
+    .iframe-container {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 50%;
+        height: 100%;
+        background-color: #f2f2f2;
+        overflow: hidden;
+        transition: width 0.3s ease;
+        z-index: 999;
+    }
+
+    /* CSS styling for iframe */
+    #myIframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* CSS styling for button */
+    .my-button {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: yellow;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        z-index: 1000;
+    }
+    
+    /* CSS styling for button hover effect */
+    .my-button:hover {
+        background-color: #ffff99;
+    }
+    .documents form {
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .documents label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .documents input[type="file"] {
+        margin-bottom: 10px;
+    }
+
+    .documents input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .documents .radio-buttons {
+        margin-bottom: 10px;
+    }
+
+    .documents button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .documents button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
+    .progress-bar {
+    width: 100%;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    margin-bottom: 100px;
+    }
+    .progress {
+        height: 20px;
+        border-radius: 5px;
+        text-align: center;
+        line-height: 20px;
+        color: white;
+        float: left;
+    }
+    .part1 {
+        width: 33.33%;
+        background-color: #4caf50;
+    }
+    .part2 {
+        width: 33.33%;
+        background-color: #4caf50;
+    }
+    .part3 {
+        width: 33.33%;
+        background-color: #4caf50;
+    }
+</style>
 <body>
+
+    <!-- Taskbar -->
+    <div class="task-bar">
+        {% if session['name'] %}
+            <div class="task-bar-logo">{{ session['name'] }}</div>
+        {% else %}
+            <div class="task-bar-logo">&nbsp;</div>
+        {% endif %}
+        
+        <div class="task-bar-buttons">
+            <!-- Change Password Button -->
+            <form method="POST" action="/change_password_page">
+                <button type="submit" class="task-bar-button">Change Password</button>
+            </form>
+            <!-- Logout Button -->
+            <form method="POST" action="/logout">
+                <button type="submit" class="task-bar-button">Logout</button>
+            </form>
+        </div>
+    </div>
     <div class="container mt-5">
         <h2>Employee Feedback</h2>
         <form action="/empfeed" method="post">
@@ -28,9 +357,89 @@
                 <label for="question4">{{ questions.question4 }}</label>
                 <input type="text" class="form-control" id="question4" name="question4" required>
             </div>
+            <div class="form-group">
+                <label for="question5">Overall Ratings:</label><br>
+                <input type="radio" id="question5" name="question5" value="1" required>
+                <label for="question5">1</label>
+                <input type="radio" id="question5" name="question5" value="2">
+                <label for="question5">2</label>
+                <input type="radio" id="question5" name="question5" value="3">
+                <label for="question5">3</label>
+                <input type="radio" id="question5" name="question5" value="4">
+                <label for="question5">4</label>
+                <input type="radio" id="question5" name="question5" value="5">
+                <label for="question5">5</label>
+            </div>
+            <div class="form-group">
+                <label for="question6">Work Balance:</label><br>
+                <input type="radio" id="question6" name="question6" value="1" required>
+                <label for="question6">1</label>
+                <input type="radio" id="question6" name="question6" value="2">
+                <label for="question6">2</label>
+                <input type="radio" id="question6" name="question6" value="3">
+                <label for="question6">3</label>
+                <input type="radio" id="question6" name="question6" value="4">
+                <label for="question6">4</label>
+                <input type="radio" id="question6" name="question6" value="5">
+                <label for="question6">5</label>
+            </div>
+            <div class="form-group">
+                <label for="question7">Culture Value:</label><br>
+                <input type="radio" id="question7" name="question7" value="1" required>
+                <label for="question7">1</label>
+                <input type="radio" id="question7" name="question7" value="2">
+                <label for="question7">2</label>
+                <input type="radio" id="question7" name="question7" value="3">
+                <label for="question7">3</label>
+                <input type="radio" id="question7" name="question7" value="4">
+                <label for="question7">4</label>
+                <input type="radio" id="question7" name="question7" value="5">
+                <label for="question7">5</label>
+            </div>
+            <div class="form-group">
+                <label for="question8">Career Opportunity:</label><br>
+                <input type="radio" id="question8" name="question8" value="1" required>
+                <label for="question8">1</label>
+                <input type="radio" id="question8" name="question8" value="2">
+                <label for="question8">2</label>
+                <input type="radio" id="question8" name="question8" value="3">
+                <label for="question8">3</label>
+                <input type="radio" id="question8" name="question8" value="4">
+                <label for="question8">4</label>
+                <input type="radio" id="question8" name="question8" value="5">
+                <label for="question8">5</label>
+            </div>
+            <div class="form-group">
+                <label for="question9">Company Benefit:</label><br>
+                <input type="radio" id="question9" name="question9" value="1" required>
+                <label for="question9">1</label>
+                <input type="radio" id="question9" name="question9" value="2">
+                <label for="question9">2</label>
+                <input type="radio" id="question9" name="question9" value="3">
+                <label for="question9">3</label>
+                <input type="radio" id="question9" name="question9" value="4">
+                <label for="question9">4</label>
+                <input type="radio" id="question9" name="question9" value="5">
+                <label for="question9">5</label>
+            </div>
+            <div class="form-group">
+                <label for="question10">Senior Management:</label><br>
+                <input type="radio" id="question10" name="question10" value="1" required>
+                <label for="question10">1</label>
+                <input type="radio" id="question10" name="question10" value="2">
+                <label for="question10">2</label>
+                <input type="radio" id="question10" name="question10" value="3">
+                <label for="question10">3</label>
+                <input type="radio" id="question10" name="question10" value="4">
+                <label for="question10">4</label>
+                <input type="radio" id="question10" name="question10" value="5">
+                <label for="question10">5</label>
+            </div>
+        
             <!-- End of specific fields -->
             <button type="submit" class="btn btn-primary">Submit Feedback</button>
         </form>
     </div>
+    
 </body>
 </html>
