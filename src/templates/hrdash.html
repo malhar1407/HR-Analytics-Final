@@ -116,6 +116,7 @@
                     <th>Contact Info</th>
                     <th>Email</th>
                     <th>Domain</th>
+                    <th>Work Experience</th>
                     <th>Skills</th>
                     <th>Cultural Fit</th>
                     <th>Upload Date</th> 
@@ -133,6 +134,7 @@
                     <td>{{ resume.contact_info }}</td>
                     <td>{{ resume.email }}</td>
                     <td>{{resume.domain}}</td>
+                    <td>{{resume.experience_category}}</td>
                     <td>
                         <ul>
                             {% for skill in resume.skills %}
