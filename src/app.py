@@ -4,7 +4,7 @@ import os
 import subprocess
 from resume_parsing import parse_resume
 from Cover_Letter import final_cover_letter
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from io import StringIO
 from Employee_Review import get_plots, get_department_wise_plots, analyze_sentiments
@@ -109,9 +109,10 @@ login_collection = db['Login_Details']  # Collection to store login details
 past_employees_collection = db['past_employees']  # Collection to store past employees
 login_collection_candidate = db['candidate'] # Collection to store candidates
 plots_collection = db['Plots_Review']
-promotion_collection = db['Employee_Promotion']
+promotion_collection = db['Employee_Promotion'] # To show the promotion collection
 graph_collection = db['Plots_Promotion']
-predicted_collection = db['Predicted_Promotions']
+predicted_collection = db['Predicted_Promotions'] # To store result from Promotion Prediction model.
+promotion_upload_date = db['Promotion_Upload_Date'] # To store upload date for the promotion csv
 
 rejected_candidate = db['rejected_candidate'] # Collection to store rejected candidates
 
@@ -146,7 +147,7 @@ def upload_files():
 
                 
                 # Parse resume and cover letter, and store information in MongoDB
-                pdf_name, name, contact_info, email, main_domain, years_experience, skills, upload_date = parse_resume(resume_file_path)
+                pdf_name, domain, name, contact_info, email, skills, upload_date = parse_resume(resume_file_path)
                 cultural_fit = final_cover_letter(cover_letter_file_path)
                 
                 name = name.upper()
@@ -161,6 +162,7 @@ def upload_files():
                     'contact_info': contact_info,
                     'email': email,
                     'skills': list(skills),
+                    'domain': domain,
                     'cultural_fit': cultural_fit,
                     'upload_date': upload_date
                 }
@@ -333,6 +335,8 @@ def validate():
                 return redirect(url_for('candidate_dashboard'))
             elif session['designation'] == 'Admin':
                 return redirect(url_for('admin_dashboard'))
+            elif session['designation'] == 'AVP':
+                return redirect(url_for('upload_file_avp'))
             elif session['designation'] == 'Employee':
                 return redirect(url_for('empfeed'))
         else:
@@ -363,7 +367,7 @@ def validate_candidate():
     
 
 # Route for logging out
-@app.route('/logout', methods=['POST'])
+@app.route('/logout', methods=['POST','GET'])
 def logout():
     # Clear the session data
     session.clear()
@@ -383,6 +387,25 @@ def admin_dashboard():
     # Fetch current employees from MongoDB collection 'Login_Details'
     employees = list(db['Login_Details'].find({}))
     return render_template('admindash.html', employees=employees)
+
+
+#Route for AVP Dashboard
+def AVP_dashboard():
+
+    return render_template('AVP_dash.html')
+
+
+@app.route('/update_status', methods=['POST'])
+def update_status():
+    data = request.json
+    employee_id = data.get('employee_id')
+    status = data.get('status')
+
+    # Update the document in the Predicted_Promotions collection
+    predicted_collection.update_one({'employee_id': employee_id}, {'$set': {'status': status}})
+
+    return render_template('AVP_dash.html')
+
 
 
 # Route for adding employee
@@ -773,15 +796,33 @@ def get_plot_ids_from_mongo():
 def get_predictions_from_mongo():
     # Fetch predictions from MongoDB
     predictions = []
-    prediction_docs = predicted_collection.find()  # Assuming 'collection' is your MongoDB collection for predictions
+    prediction_docs = predicted_collection.find()  
     for doc in prediction_docs:
         employee_id = doc.get('employee_id')
         predicted_promotion = doc.get('predicted_promotion')
         predictions.append({'employee_id': employee_id, 'predicted_promotion': predicted_promotion})
     return predictions
 
+from io import StringIO
+from flask import render_template
+
 @app.route('/upload_HR_AVP', methods=['GET', 'POST'])
 def upload_file_avp():
+    # Retrieve the latest upload date from MongoDB
+    latest_upload = promotion_upload_date.find_one(sort=[('_id', -1)])
+    if latest_upload:
+        latest_upload_date = latest_upload['upload_date']
+        six_months_ago = datetime.now() - timedelta(days=180)
+        if latest_upload_date >= six_months_ago:
+            # If the latest upload date is within 6 months, hide the upload section
+            show_upload_section = False
+        else:
+            # If the latest upload date is older than 6 months, show the upload section
+            show_upload_section = True
+    else:
+        # If there's no upload date recorded, show the upload section
+        show_upload_section = True
+
     if request.method == 'POST':
         if 'file' not in request.files:
             return jsonify({'error': 'No file part'})
@@ -795,15 +836,25 @@ def upload_file_avp():
                 # Read the content of the file
                 file_content = file.read().decode('utf-8')
                 data = read_csv(StringIO(file_content))
+
                 # Save data to MongoDB
                 records = data.to_dict(orient='records')
+                promotion_collection.delete_many({})
                 promotion_collection.insert_many(records)
-                return jsonify({'message': 'File uploaded successfully'})
+
+                upload_date = datetime.now()
+                promotion_upload_date.insert_one({'upload_date' : upload_date})
+                return render_template('AVP_dash.html', show_upload_section=show_upload_section)
             except Exception as e:
                 return jsonify({'error': str(e)})
     
-    # If GET request, render the upload.html template
-    return render_template('test3.html')
+    # Fetch data from the predicted_collection
+    promotion_prediction = predicted_collection.find({})
+    # Fetch department information from Employee_Promotion collection
+    department_info = promotion_collection.find({}, {'employee_id': 1, 'department': 1})
+
+
+    return render_template('AVP_dash.html', hide_upload_section=not show_upload_section, promotion_prediction=promotion_prediction,department_info=department_info)
 
 
 
@@ -816,7 +867,7 @@ def analyze_AVP():
     predictions = get_predictions_from_mongo()
     
     # Render a template to display the generated plots and predictions
-    return render_template('test2.html', plot_ids=plot_ids, predictions=predictions)
+    return render_template('Promotion_Stats.html', plot_ids=plot_ids, predictions=predictions)
 
 @app.route('/AVP/plot/<plot_id>')
 def plot(plot_id):
@@ -883,6 +934,7 @@ def generate_employee_review():
 
 
 if __name__ == '__main__':
+    # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
