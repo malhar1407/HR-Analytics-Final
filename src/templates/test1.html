@@ -5,40 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis Result</title>
     <style>
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust container width */
-            gap: 20px; /* Adjust the gap between plots */
-            margin: auto; /* Center the container horizontally */
-            max-width: 1500px; /* Limit the maximum width of the container */
-        }
-
-        .department-container {
-            margin-bottom: 40px; /* Add some space between department containers */
-        }
-
         .plot-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             border: 1px solid #ccc;
-            height: 100%; /* Ensure the plot container takes up the full height */
             padding: 0; /* Remove padding */
-            margin: 0; /* Remove margin */
+            margin-bottom: 20px; /* Add space between plots */
             width: 100%;
+            transition: box-shadow 0.3s; /* Add transition for smoother effect */
+        }
+
+        .plot-container:hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Add shadow on hover */
         }
 
         .plot-container img {
             max-width: 100%; /* Make sure the plot fits within its container */
             height: auto; /* Maintain aspect ratio */
         }
+        h1, h2, h3 {
+            text-align: center; /* Center the text horizontally */
+        }
+        .container {
+            margin: auto; /* Center the container horizontally */
+            max-width: 1500px; /* Limit the maximum width of the container */
+        }
+        .analysis-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr)); /* Display only two columns */
+            gap: 20px; /* Adjust the gap between plots */
+            margin: auto; /* Center the container horizontally */
+            max-width: 1500px; /* Limit the maximum width of the container */
+        }
+
+
+        .department-container {
+            margin-bottom: 40px; /* Add some space between department containers */
+        }
+
+
+
     </style>
+    <script>
+        function showDepartmentPlots() {
+            var department = document.getElementById("department-select").value;
+            var departmentPlots = document.getElementsByClassName("department-plots");
+
+            for (var i = 0; i < departmentPlots.length; i++) {
+                departmentPlots[i].style.display = "none";
+            }
+
+            var selectedDepartmentPlots = document.getElementsByClassName("department-plots-" + department);
+            for (var i = 0; i < selectedDepartmentPlots.length; i++) {
+                selectedDepartmentPlots[i].style.display = "block";
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Analysis Result</h1>
     
+    
+    
     <!-- Display the plot per column -->
-    <div class="container">
+    <div class="analysis-container">
         {% set processed_plots = [] %}
         {% for plot in plots %}
             {% if plot not in processed_plots %}
@@ -49,19 +80,35 @@
             {% endif %}
         {% endfor %}
     </div>
+   
     <!-- Display department-wise plots -->
     <h2>Department-wise Distribution</h2>
+     <!-- Dropdown for department selection -->
+     <div>
+        <label for="department-select">Select Department:</label>
+        <select id="department-select" onchange="showDepartmentPlots()">
+            {% for department_name in department_names %}
+                <option value="{{ department_name }}">{{ department_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <div class="container">
-        {% set processed_department_plots = [] %}
-        {% for department_plot in department_plots %}
-            {% if department_plot not in processed_department_plots %}
-                <div class="plot-container">
-                    <img src="data:image/png;base64,{{ department_plot }}" alt="Department-wise Distribution">
+        {% for index in range(department_names|length) %}
+            {% set department_name = department_names[index] %}
+            {% set department_plot = department_plots[index] %}
+            <div class="department-plots department-plots-{{ department_name }}" style="display: none;">
+                <h3>{{ department_name }}</h3> <!-- Display department name -->
+                <div class="analysis-container">
+                    {% for plot in department_plot %}
+                        <div class="plot-container">
+                            <img src="data:image/png;base64,{{ plot }}" alt="Plot">
+                        </div>
+                    {% endfor %}
                 </div>
-                {% set _ = processed_department_plots.append(department_plot) %}
-            {% endif %}
+            </div>
         {% endfor %}
     </div>
+
 
     <!-- Display other analysis results -->
     <div>

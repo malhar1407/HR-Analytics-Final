@@ -7,15 +7,17 @@ from Cover_Letter import final_cover_letter
 from datetime import datetime, timedelta
 import pandas as pd
 from io import StringIO
-from Employee_Review import get_plots, get_department_wise_plots, analyze_sentiments
+from Employee_Review import get_plots, get_department_wise_plots, analyze_sentiments, get_department_names
 from Employee_Promotion import generate_graphs, Promotion_predictions
 from bson.binary import Binary
 from bson import ObjectId
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-
+from jinja2 import Environment
 import io
 import base64
+import nltk
+nltk.download('wordnet')
 
 def update_user_password(user_id, new_password):
     # MongoDB connection
@@ -96,6 +98,13 @@ def generate_candidate_id():
 
 
 app = Flask(__name__)
+
+# Define a custom Jinja2 filter to mimic the behavior of enumerate
+def jinja2_enumerate(iterable, start=0):
+    return enumerate(iterable, start=start)
+
+# Add the custom filter to the Jinja2 environment
+app.jinja_env.filters['enumerate'] = jinja2_enumerate
 
 # Set a secret key
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -750,13 +759,12 @@ def analyze():
     # Drop the "_id" column
     df.drop("_id", axis=1, inplace=True)
     df.drop("emp_id", axis=1, inplace=True)
-    #df.drop("department", axis=1, inplace=True)
 
     # Rename columns
-    df.rename(columns={'question4': 'summary', 'question1': 'pros', 'question2': 'cons', 'question3': 'advice-to-mgmt', 'question5': 'overall-ratings', 'question6': 'work-balance-stars', 'question7': 'culture-values-stars', 'question8': 'carrer-opportunities-stars', 'question9': 'comp-benefit-stars', 'question10': 'senior-mangemnet-stars' }, inplace=True)
+    df.rename(columns={'question4': 'summary', 'question1': 'pros', 'question2': 'cons', 'question3': 'advice-to-mgmt', 'question5': 'overall-ratings', 'question6': 'work-balance-stars', 'question7': 'culture-values-stars', 'question8': 'career-opportunities-stars', 'question9': 'comp-benefit-stars', 'question10': 'senior-management-stars' }, inplace=True)
 
     # Rearrange columns
-    df = df[['summary', 'pros', 'cons', 'advice-to-mgmt', 'overall-ratings', 'work-balance-stars', 'culture-values-stars', 'carrer-opportunities-stars', 'comp-benefit-stars', 'senior-mangemnet-stars', 'department']]
+    df = df[['summary', 'pros', 'cons', 'advice-to-mgmt', 'overall-ratings', 'work-balance-stars', 'culture-values-stars', 'career-opportunities-stars', 'comp-benefit-stars', 'senior-management-stars', 'department']]
 
     # Call the analyze_sentiments function
     positive_reviews, negative_reviews, neutral_reviews = analyze_sentiments(df)
@@ -765,19 +773,21 @@ def analyze():
     plot_ids = get_plots(df)
 
     # Call the get_department_wise_plots function
-    department_plot_ids = get_department_wise_plots(df, 'department')
+    department_names, department_plot_ids = get_department_wise_plots(df, 'department')
 
     # Get plot data from MongoDB
     plots = [get_plot_data(plot_id) for plot_id in plot_ids]
-    department_plots = [get_plot_data(plot_id) for plot_id in department_plot_ids]
+    department_plots = [[get_plot_data(plot_id) for plot_id in department_plot_set] for department_plot_set in department_plot_ids]
 
     # Render the HTML template with analysis results
     return render_template('test1.html', 
-                           positive_reviews=positive_reviews, 
-                           negative_reviews=negative_reviews, 
-                           neutral_reviews=neutral_reviews,
-                           plots=plots,
-                           department_plots=department_plots)  # Pass department-wise plots to the template
+                    positive_reviews=positive_reviews, 
+                    negative_reviews=negative_reviews, 
+                    neutral_reviews=neutral_reviews,
+                    plots=plots,
+                    department_plots=department_plots,
+                    department_names=department_names)  # Pass department names and plots to the template
+
 
 def read_csv(file_promotion):
     data = pd.read_csv(file_promotion)

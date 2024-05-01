@@ -51,33 +51,49 @@ def plotPerColumnDistribution(df, nGraphShown):
 
 def plotDepartmentWiseDistribution(df, department_column, nGraphShown):
     unique_departments = df[department_column].unique()
-    nDepartments = len(unique_departments)
-    plot_ids = []
+    department_plots = []
     
     for i, department in enumerate(unique_departments):
-        plt.figure(figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-        df[df[department_column] == department].hist()
-        plt.ylabel('counts')
-        plt.xlabel(department_column)
-        plt.title(f'Distribution of {department_column} for {department}')
-        plt.tight_layout(pad=1.0)
-        # Save the plot as binary data
-        buffer = io.BytesIO()
-        plt.savefig(buffer, format='png')
-        buffer.seek(0)
-        plot_data = buffer.getvalue()
-        buffer.close()
-        # Insert the plot data into MongoDB and get the plot ID
-        plot_id = plots_collection.insert_one({'plot_data': plot_data}).inserted_id
-        # Append the plot ID to the list
-        plot_ids.append(plot_id)
-        plt.close()  # Close the current plot to avoid overlapping plots
+        department_plot_ids = []  # Store plot IDs for each department
+        data = df[df[department_column] == department]
+        numeric_columns = data.select_dtypes(include=np.number).columns.tolist()
+        nCol = len(numeric_columns)
+        for j, column in enumerate(numeric_columns):
+            plt.figure(figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+            data[column].hist()
+            plt.ylabel('counts')
+            plt.xlabel(column)
+            plt.title(f'Distribution of {column}')
+            plt.tight_layout(pad=1.0)
+            # Save the plot as binary data
+            buffer = io.BytesIO()
+            plt.savefig(buffer, format='png')
+            buffer.seek(0)
+            plot_data = buffer.getvalue()
+            buffer.close()
+            # Insert the plot data into MongoDB and get the plot ID
+            plot_id = plots_collection.insert_one({'plot_data': plot_data}).inserted_id
+            # Append the plot ID to the list
+            department_plot_ids.append(plot_id)
+            plt.close()  # Close the current plot to avoid overlapping plots
+        
+        # Append the plot IDs for the department to the overall list
+        department_plots.append(department_plot_ids)
     
-    return plot_ids
+    return unique_departments, department_plots
+
+
 def get_department_wise_plots(df, department_column):
     # Get department-wise distribution plots
-    plot_ids = plotDepartmentWiseDistribution(df, department_column, 6)
-    return plot_ids
+    department_names, department_plot_ids = plotDepartmentWiseDistribution(df, department_column, 6)
+    # Assuming department_plot_ids is a list of lists, each inner list contains plot IDs for a specific department
+    return department_names, department_plot_ids
+
+def get_department_names(df, department_column):
+    # Get unique department names from the DataFrame
+    department_names = df[department_column].unique().tolist()
+    return department_names
+
 
 
 def merge_and_drop_columns(df):
