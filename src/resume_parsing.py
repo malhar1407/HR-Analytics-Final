@@ -48,6 +48,11 @@ def preprocess_text(text):
     preprocessed_text = ' '.join(tokens)
     return preprocessed_text
 
+def remove_phone_numbers(text):
+    # Regular expression pattern to match phone numbers
+    phone_pattern = r'\b(?:\d{3}[-.\s]|\(\d{3}\)\s*)\d{3}[-.\s]?\d{4}\b'
+    return re.sub(phone_pattern, '', text)
+
 # Define the TF-IDF vectorizer
 tfidf_vectorizer = TfidfVectorizer()
 
@@ -123,13 +128,56 @@ def extract_domain(pdf_path):
     domain = re.sub(r"[\[\]']", "", predicted_domain)
     return domain
 
+def extract_work_experience(pdf_path):
+    # Open the PDF file
+    pdf_document = fitz.open(pdf_path)
+    text = ""
+
+    # Extract text from each page
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        text += page.get_text()
+
+        # Search for work experience section using multiple keywords
+        work_experience_keywords = ['Work Experience', 'Employment History', 'Professional Experience', 'Career History', 'Work History', 'Experience', 'Internships']
+        work_experience_section = re.search(r'(' + '|'.join(work_experience_keywords) + ')', text, re.IGNORECASE)
+
+        if work_experience_section:
+            work_experience_text = text[work_experience_section.start():]
+            
+            # Replace 'current' or 'present' with the current year
+            current_year = datetime.now().year
+            work_experience_text = re.sub(r'\b(current|present)\b', str(current_year), work_experience_text, flags=re.IGNORECASE)
+            
+            # Extract years and convert them to integers
+            years = [int(year[-4:]) for year in re.findall(r'\b(?:\d{2}/)?20\d{2}\b', work_experience_text)]
+            #print(years)
+
+            # Calculate years of experience
+            total_years = max(years) - min(years) if years else 0
+            return total_years
+
+    return 0
+
+def bin_years_of_experience(years):
+    if years <= 1:
+        return "Fresher"
+    elif 2 <= years <= 4:
+        return "Beginner"
+    elif 5 <= years <= 9:
+        return "Mid-level"
+    else:
+        return "Experienced"
+
 # Main function to parse resume and extract information
 def parse_resume(pdf_path):
     # Parse resume and extract relevant information
     pdf_name, name, contact_info, email, skills, upload_date = extract_info_from_resume(pdf_path)
     domain = extract_domain(pdf_path)
+    years_of_experience = extract_work_experience(pdf_path)
+    experience_category = bin_years_of_experience(years_of_experience)
     # Get the current date and time as the upload date
     upload_date = datetime.now()
 
     # Return all extracted information
-    return pdf_name, domain, name, contact_info, email, skills, upload_date
+    return pdf_name, domain, name, contact_info, email, experience_category, skills, upload_date
