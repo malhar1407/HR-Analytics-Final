@@ -549,8 +549,12 @@ def back():
 
     if user == 'Candidate':
         return redirect(url_for('candidate_dashboard'))
+    elif user == 'Admin':
+        return redirect(url_for('admin_dashboard'))
     elif user == 'HR':
         return redirect(url_for('hr_dashboard'))
+    elif user == 'AVP':
+        return redirect(url_for('upload_file_avp'))
 
 # Route for rendering the change password page
 @app.route('/change_password_page', methods=['POST','GET'])
