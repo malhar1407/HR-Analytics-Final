@@ -431,22 +431,39 @@ def add_employee():
         phone = request.form.get('phone')
         password = "Admin123@"  # Default password
 
-        print(department)
-        # Generate unique employee ID
-        emp_id = generate_emp_id()
-
-        # Insert employee details into MongoDB
-        employee_data = {
-            'emp_id': emp_id,
-            'name': name,
-            'department': department, 
-            'designation': designation,
-            'email': email.lower(),  # Convert email to lowercase
-            'phone': phone,
-            'password': password,
-            'created_at': datetime.now()
-        }
-        login_collection.insert_one(employee_data)
+        # Check if the email matches a past employee
+        past_employee = past_employees_collection.find_one({'email': email.lower()})
+        if past_employee:
+            # Retrieve the past employee's details
+            emp_id = past_employee['emp_id']
+            # You may want to update some details such as name, department, etc.
+            # based on the new input; for now, let's assume we keep the old details
+            # Insert the past employee details into the login_details collection
+            login_collection.insert_one({
+                'emp_id': emp_id,
+                'name': name,
+                'department': department,
+                'designation': designation,
+                'email': email.lower(),
+                'phone': phone,
+                'password': password,
+                'created_at': datetime.now()
+            })
+        else:
+            # Generate unique employee ID
+            emp_id = generate_emp_id()
+            # Insert new employee details into MongoDB
+            employee_data = {
+                'emp_id': emp_id,
+                'name': name,
+                'department': department,
+                'designation': designation,
+                'email': email.lower(),  # Convert email to lowercase
+                'phone': phone,
+                'password': password,
+                'created_at': datetime.now()
+            }
+            login_collection.insert_one(employee_data)
 
         return redirect(url_for('admin_dashboard'))
 
