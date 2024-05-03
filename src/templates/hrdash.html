@@ -5,12 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HR Dashboard</title>
     <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <style>
+        /* Custom CSS for the navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100% ;
+            z-index: 1000;
+        }
+        /* Centered title */
+        .navbar-brand {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        /* Move buttons to the right */
+        .task-bar-buttons {
+            margin-right: 15px;
+        }
       #sidebar {
             position: fixed;
             top: 0;
@@ -110,7 +131,11 @@
         <div id="sidebar">
             <ul class="list-unstyled components">
                 <!-- <li>
+                <!-- <li>
                     <a href="{{ url_for('upload_files') }}" class="btn btn-dark btn-block">Upload File</a>
+                </li> -->
+                <li>
+                    <a href="{{ url_for('analyze') }}" class="btn btn-dark btn-block">Feedback Statistics</a>
                 </li> -->
                 <li>
                     <a href="{{ url_for('analyze') }}" class="btn btn-dark btn-block">Feedback Analysis</a>
@@ -120,6 +145,25 @@
         </div>
     
     <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- Sidebar toggle button -->
+        <button id="sidebarCollapse" class="btn btn-dark">
+            <i class="fas fa-bars"></i>
+        </button>
+        <!-- Centered title -->
+        <a class="navbar-brand" href="#">HR Dashboard</a>
+        <!-- Move buttons to the right -->
+        <!-- Dropdown menu for user options -->
+    <div class="dropdown ml-auto">
+        <button class="btn btn-dark dropdown-toggle" type="button" id="userDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="far fa-user-circle"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdownMenu">
+            <a class="dropdown-item" href="{{ url_for('change_password_page') }}">Change Password</a>
+            <a class="dropdown-item"  href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+    </nav>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <!-- Sidebar toggle button -->
         <button id="sidebarCollapse" class="btn btn-dark">
@@ -140,6 +184,58 @@
     </nav>
 
 
+    <div class="container" style="margin-top: 80px; margin-left: 40px; margin-right: 40px;">
+        <!-- Add Bootstrap table styling -->
+        <table class="table table-dark table-striped" border="1" id="resumesTable">
+            <thead>
+                <tr>
+                    <th>Resume File Name</th>
+                    <th>Cover Letter File Name</th>
+                    <th>Name</th>
+                    <th>Contact Info</th>
+                    <th>Email</th>
+                    <th>Domain</th>
+                    <th>Work Experience</th>
+                    <th>Skills</th>
+                    <th>Cultural Fit</th>
+                    <th>Upload Date</th> 
+                    <th>Result</th>
+                    <th>Meets</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resume in resumes %}
+                {% if 'status' not in resume %}
+                <tr>
+                    <td><a href="/download_resume/{{ resume.cand_id }}" target="_blank">{{ resume.resume_name }}</a></td>
+                    <td><a href="/download_cover_letter/{{ resume.cand_id }}" target="_blank">{{resume.cover_letter_name}}</a></td>
+                    <td>{{ resume.name }}</td>
+                    <td>{{ resume.contact_info }}</td>
+                    <td>{{ resume.email }}</td>
+                    <td>{{resume.domain}}</td>
+                    <td>{{resume.experience_category}}</td>
+                    <td>
+                        <ul>
+                            {% for skill in resume.skills %}
+                            <li>{{ skill }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ '%.2f' % resume.cultural_fit }}</td>
+                    <td>{{ resume.upload_date }}</td> <!-- Display upload date-time stamp -->
+                    <td>
+                        <button type="button" class="btn btn-success" onclick="acceptCandidate('{{ resume.cand_id }}')">Accept</button>
+                        <br><br>
+                        <button type="button" class="btn btn-danger" onclick="rejectCandidate('{{ resume.cand_id }}')">Reject</button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="scheduleMeeting('{{ resume.cand_id }}')">Schedule</button>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
     <div class="container">
         <h1 class="mt-4">HR Dashboard</h1>
 
@@ -198,9 +294,8 @@
 
     <!-- JavaScript -->
     <!-- Bootstrap JS (optional) -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!-- jQuery (optional) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
     function acceptCandidate(candidateId) {
