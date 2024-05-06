@@ -820,7 +820,7 @@ def schedule_meeting(candidate_id):
             flash('Candidate not found')
             return redirect(url_for('hr_dashboard'))
 if __name__ == '__main__':
-    # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
