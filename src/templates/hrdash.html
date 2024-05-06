@@ -190,11 +190,26 @@
     function rejectCandidate(candidateId) {
         var reason = prompt("Please enter the reason for rejection:");
         if (reason !== null && reason.trim() !== "") {
-            // If the user entered a reason, redirect to the reject route
-            window.location.href = '/reject_candidate/' + candidateId + '?reason=' + encodeURIComponent(reason);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/reject_candidate');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Candidate rejected successfully');
+                    // Optionally, update the UI here if needed
+                    var row = document.getElementById('row_' + candidateId);
+                    if (row) {
+                        row.style.display = 'none'; // Hide the row
+                    }
+                    location.reload(); // Auto-refresh the page
+                } else {
+                    console.error('Failed to reject candidate');
+                }
+            };
+            xhr.send(JSON.stringify({ candidateId: candidateId, reason: reason }));
         }
     }
-
+    
     function scheduleMeeting(candidateId) {
         window.location.href = '/schedule_meeting/' + candidateId;
     }

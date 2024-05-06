@@ -303,19 +303,36 @@ def accept_candidate(candidate_id):
     
 
 # Route to reject candidates
-@app.route('/reject_candidate/<candidate_id>')
-def reject_candidate(candidate_id):
-    candidate_id = candidate_id
-    reason = request.args.get('reason')
-    data = {
-        'status': 'Sorry! We have decided not to continue forward with you. We will contact you if a position opens up in the future.',
-        'reason': reason
-    }
-    resume_collection.update_one(
-        {'cand_id': candidate_id},
-        {'$set': data}
-    )
-    return redirect(url_for('hr_dashboard'))
+@app.route('/reject_candidate', methods=['POST'])
+def reject_candidate():
+    if request.method == 'POST':
+        candidate_id = request.json.get('candidateId')
+        reason = request.json.get('reason')
+
+        # Get candidate details from resume_collection
+        candidate_details = resume_collection.find_one({'cand_id': candidate_id})
+
+        if candidate_details:
+            # Insert candidate details into rejected_candidate collection
+            rejected_candidate.insert_one({
+                'cand_id': candidate_id,
+                'reason': reason,
+                # Add other fields as needed
+            })
+
+            # Update candidate status and reason for rejection
+            data = {
+                'status': 'Sorry! We have decided not to continue forward with you. We will contact you if a position opens up in the future.',
+                'reason': reason
+            }
+            resume_collection.update_one(
+                {'cand_id': candidate_id},
+                {'$set': data}
+            )
+
+            return jsonify({'success': True}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Candidate not found'}), 404
         
 
 # Route for candidate login page
@@ -553,6 +570,8 @@ def back():
         return redirect(url_for('admin_dashboard'))
     elif user == 'HR':
         return redirect(url_for('hr_dashboard'))
+    elif user == 'Employee':
+        return redirect(url_for('empfeed'))
     elif user == 'AVP':
         return redirect(url_for('upload_file_avp'))
 
@@ -967,8 +986,6 @@ def generate_employee_review():
 
 
 if __name__ == '__main__':
-    # streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
-    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
