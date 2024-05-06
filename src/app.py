@@ -747,28 +747,28 @@ def get_plot_data(plot_id):
     plot_base64 = base64.b64encode(plot_data).decode()
     return plot_base64
 
-# @app.route('/upload_HR', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         if 'file' not in request.files:
-#             return jsonify({'error': 'No file part'})
+@app.route('/upload_HR', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
         
-#         file = request.files['file']
-#         if file.filename == '':
-#             return jsonify({'error': 'No selected file'})
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'})
         
-#         if file:
-#             try:
-#                 df = read_csv_file(StringIO(convert_encoding_to_utf8(file)))
-#                 # Save data to MongoDB
-#                 records = df.to_dict(orient='records')
-#                 review_collection.insert_many(records)
-#                 return jsonify({'message': 'File uploaded successfully'})
-#             except Exception as e:
-#                 return jsonify({'error': str(e)})
+        if file:
+            try:
+                df = read_csv_file(StringIO(convert_encoding_to_utf8(file)))
+                # Save data to MongoDB
+                records = df.to_dict(orient='records')
+                review_collection.insert_many(records)
+                return jsonify({'message': 'File uploaded successfully'})
+            except Exception as e:
+                return jsonify({'error': str(e)})
     
-#     # If GET request, render the upload.html template
-#     return render_template('test.html')
+    # If GET request, render the upload.html template
+    return render_template('test.html')
 # @app.route('/get_plot_data/<plot_id>')
 # def get_plot_data(plot_id):
 #     try:
@@ -823,6 +823,48 @@ def analyze():
 
     # Render the HTML template with analysis results
     return render_template('test1.html', 
+                    positive_reviews=positive_reviews, 
+                    negative_reviews=negative_reviews, 
+                    neutral_reviews=neutral_reviews,
+                    plots=plots,
+                    department_plots=department_plots,
+                    department_names=department_names)  # Pass department names and plots to the template
+
+
+@app.route('/feedback_AVP', methods=['POST','GET'])
+def analyze1():
+    # Retrieve data from MongoDB
+    data = list(feedback_ans.find())
+
+    # Convert JSON data to DataFrame
+    df = pd.DataFrame(data)
+
+    # Preprocess DataFrame
+    # Drop the "_id" column
+    df.drop("_id", axis=1, inplace=True)
+    df.drop("emp_id", axis=1, inplace=True)
+
+    # Rename columns
+    df.rename(columns={'question4': 'summary', 'question1': 'pros', 'question2': 'cons', 'question3': 'advice-to-mgmt', 'question5': 'overall-ratings', 'question6': 'work-balance-stars', 'question7': 'culture-values-stars', 'question8': 'career-opportunities-stars', 'question9': 'comp-benefit-stars', 'question10': 'senior-management-stars' }, inplace=True)
+
+    # Rearrange columns
+    df = df[['summary', 'pros', 'cons', 'advice-to-mgmt', 'overall-ratings', 'work-balance-stars', 'culture-values-stars', 'career-opportunities-stars', 'comp-benefit-stars', 'senior-management-stars', 'department']]
+
+    # Call the analyze_sentiments function
+    positive_reviews, negative_reviews, neutral_reviews = analyze_sentiments(df)
+
+    # Call the get_plots function
+    plot_ids = get_plots(df)
+
+    # Call the get_department_wise_plots function
+    department_names, department_plot_ids = get_department_wise_plots(df, 'department')
+
+    # Get plot data from MongoDB
+    plots = [get_plot_data(plot_id) for plot_id in plot_ids]
+    department_plots = [[get_plot_data(plot_id) for plot_id in department_plot_set] for department_plot_set in department_plot_ids]
+
+    # Render the HTML template with analysis results
+    return render_template('AVP_Feedback.html', 
                     positive_reviews=positive_reviews, 
                     negative_reviews=negative_reviews, 
                     neutral_reviews=neutral_reviews,
@@ -986,6 +1028,9 @@ def generate_employee_review():
 
 
 if __name__ == '__main__':
+    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
