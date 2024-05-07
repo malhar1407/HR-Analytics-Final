@@ -29,29 +29,35 @@ def plotPerColumnDistribution(df, nGraphShown):
     numeric_columns = df.select_dtypes(include=np.number).columns.tolist()
     nCol = len(numeric_columns)
     plot_ids = []
+    colors = ['#e9724d', '#d6d727', '#92cad1', '#79ccb3', '#868686', '#b33c6a', '#00a2c7', '#f3af42', '#5e6f64']
+    
     for i, column in enumerate(numeric_columns):
         plt.figure(figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-        df[column].hist()
-        plt.ylabel('counts')
+        df[column].hist(color=colors[i % len(colors)])  # Use modulo to cycle through colors
+        plt.ylabel('Counts')
         plt.xlabel(column)
         plt.title(f'Distribution of {column}')
         plt.tight_layout(pad=1.0)
+        
         # Save the plot as binary data
         buffer = io.BytesIO()
         plt.savefig(buffer, format='png')
         buffer.seek(0)
         plot_data = buffer.getvalue()
         buffer.close()
+        
         # Insert the plot data into MongoDB and get the plot ID
         plot_id = plots_collection.insert_one({'plot_data': plot_data}).inserted_id
+        
         # Append the plot ID to the list
         plot_ids.append(plot_id)
         plt.close()  # Close the current plot to avoid overlapping plots
+    
     return plot_ids
-
 def plotDepartmentWiseDistribution(df, department_column, nGraphShown):
     unique_departments = df[department_column].unique()
     department_plots = []
+    colors = ['#e9724d', '#d6d727', '#92cad1', '#79ccb3', '#868686', '#b33c6a', '#00a2c7', '#f3af42', '#5e6f64']
     
     for i, department in enumerate(unique_departments):
         department_plot_ids = []  # Store plot IDs for each department
@@ -60,8 +66,8 @@ def plotDepartmentWiseDistribution(df, department_column, nGraphShown):
         nCol = len(numeric_columns)
         for j, column in enumerate(numeric_columns):
             plt.figure(figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-            data[column].hist()
-            plt.ylabel('counts')
+            data[column].hist(color=colors[j % len(colors)])  # Use modulo to cycle through colors
+            plt.ylabel('Counts')
             plt.xlabel(column)
             plt.title(f'Distribution of {column}')
             plt.tight_layout(pad=1.0)
@@ -81,7 +87,6 @@ def plotDepartmentWiseDistribution(df, department_column, nGraphShown):
         department_plots.append(department_plot_ids)
     
     return unique_departments, department_plots
-
 
 def get_department_wise_plots(df, department_column):
     # Get department-wise distribution plots

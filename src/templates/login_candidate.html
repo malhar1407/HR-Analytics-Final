@@ -14,18 +14,18 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      position: relative; /* Add position relative to body */
+      position: relative;
     }
 
     .flash-messages {
-      position: absolute; /* Position flash messages absolutely */
-      top: 20px; /* Adjust top position */
-      right: 20px; /* Adjust right position */
-      list-style-type: none; /* Remove default list style */
-      padding: 10px; /* Add padding */
-      background-color: #f44336; /* Set background color */
-      color: white; /* Set text color */
-      border-radius: 5px; /* Add border-radius */
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      list-style-type: none;
+      padding: 10px;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
     }
 
     .login-container {
@@ -72,26 +72,26 @@
 </head>
 <body>
 
-  
-
   <div class="login-container">
     <h2>Login</h2>
-    <!-- Add this section to display flash messages -->
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul class="flash-messages">
-      {% for message in messages %}
-      <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
+    
     <form action="/validate_candidate" method="POST" enctype="multipart/form-data">
       <label for="candidate-id">Candidate ID:</label><br>
       <input type="text" id="candidate-id" name="candidate-id" placeholder="Enter candidate ID (e.g., C00001)" pattern="C\d{5}" title="Please enter a valid candidate ID (e.g., C00001)" required><br><br>
 
       <label for="password">Password:</label><br>
       <input type="password" id="password" name="password" placeholder="Enter Password" required><br><br>
+
+      <!-- Move the flash messages section here -->
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <ul class="flash-messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
 
       <input type="submit" value="Login">
     </form>
