@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -104,7 +104,7 @@
                 <a href="{{ url_for('analyze_AVP') }}" class="btn btn-dark btn-block">Promotion Statistics</a>
             </li>
             <li>
-                <a href="{{ url_for('delete_employee') }}" class="btn btn-dark btn-block">Feedback Statistics</a>
+                <a href="{{ url_for('analyze1') }}" class="btn btn-dark btn-block">Feedback Statistics</a>
             </li>
             
         
@@ -178,36 +178,39 @@
     <script>
         $(document).ready(function () {
 
-            // Function to handle accept button click
-            $('.accept-btn').on('click', function () {
-            var employeeId = $(this).data('employee-id');
-            updateEmployeeStatus(employeeId, 'approved', $(this).closest('tr'));
-            });
+// Function to handle accept button click
+$('.accept-btn').on('click', function () {
+    var employeeId = $(this).data('employee-id');
+    var rowElement = $(this).closest('tr');
+    updateEmployeeStatus(employeeId, 'approved', rowElement);
+});
 
-            // Function to handle reject button click
-             $('.reject-btn').on('click', function () {
-            var employeeId = $(this).data('employee-id');
-            updateEmployeeStatus(employeeId, 'rejected', $(this).closest('tr'));
-            });
+// Function to handle reject button click
+$('.reject-btn').on('click', function () {
+    var employeeId = $(this).data('employee-id');
+    var rowElement = $(this).closest('tr');
+    updateEmployeeStatus(employeeId, 'rejected', rowElement);
+});
 
+// Function to update employee status via AJAX
+function updateEmployeeStatus(employeeId, status, rowElement) {
+    $.ajax({
+        type: 'POST',
+        url: '/update_status', // Change this URL to your Flask route
+        data: JSON.stringify({ employee_id: employeeId, status: status }),
+        contentType: 'application/json',
+        success: function (response) {
+            // Handle success response if needed
+            console.log(response);
+            rowElement.remove(); // Remove corresponding row from table
+            location.reload(); // Reload the page
+        },
+        error: function (xhr, status, error) {
+            // Handle error response if needed
+            console.error(error);
+        }
+    });
 
-             // Function to update employee status via AJAX
-        function updateEmployeeStatus(employeeId, status) {
-            $.ajax({
-                type: 'POST',
-                url: '/update_status', // Change this URL to your Flask route
-                data: JSON.stringify({ employee_id: employeeId, status: status }),
-                contentType: 'application/json',
-                success: function (response) {
-                    // Handle success response if needed
-                    console.log(response);
-                    rowElement.remove(); // Remove corresponding row from table
-                },
-                error: function (xhr, status, error) {
-                    // Handle error response if needed
-                    console.error(error);
-                }
-            });
         }
             $('#uploadForm').on('submit', function (event) {
                 event.preventDefault(); // Prevent default form submission

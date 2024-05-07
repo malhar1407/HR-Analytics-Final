@@ -230,24 +230,50 @@
             }
 
             /* CSS styling for button */
-            .my-button {
-                position: absolute;
-                bottom: 20px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background-color: yellow;
-                color: #000;
-                border: none;
-                cursor: pointer;
-                z-index: 1000;
-            }
+            /* Modified styling for the button */
+.my-button {
+    position: fixed; /* Changed from absolute to fixed */
+    bottom: 20px;
+    right: 20px;
+    width: 60px; /* Increased width */
+    height: 60px; /* Increased height */
+    border-radius: 50%;
+    background-color: lightblue; /* Changed from yellow to light blue */
+    color: #000;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex; /* Added */
+    justify-content: center; /* Added */
+    align-items: center; /* Added */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Added */
+    font-family: 'Roboto', sans-serif; /* Use a nice font */
+    font-size: 16px; /* Adjust font size */
+    font-weight: bold;
+}
 
-            /* CSS styling for button hover effect */
-            .my-button:hover {
-                background-color: #ffff99;
-            }
+/* Modified button hover effect */
+.my-button:hover {
+    background-color: #ffffcc; /* Changed hover color */
+}
+
+/* CSS styling for the chat icon */
+.chat-icon {
+    width: 40px; /* Adjusted size */
+    height: 40px; /* Adjusted size */
+}
+
+/* Additional styles for the iframe container */
+.iframe-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #f9f9f9;
+    transition: width 0.3s ease;
+    border-left: 1px solid #ccc;
+}
             .documents form {
                 padding: 20px;
                 border: 1px solid #ccc;
@@ -429,7 +455,9 @@
             </div>
               
               <!-- Button to toggle iframe -->
-              <button class="my-button" onclick="toggleIframe()">Chat</button>
+              <button class="my-button" onclick="toggleIframe()">
+                Chat
+              </button>
               
             <script>
                 function toggleIframe() {

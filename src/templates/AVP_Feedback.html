@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis Result</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <style>
         .plot-container {
             display: flex;
@@ -66,6 +71,69 @@
             width: 100%;
             z-index: 1000;
         }
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Hide the sidebar by default */
+            height: 100%;
+            width: 250px;
+            background-color: rgba(52, 58, 64, 0.9); /* Dark gray color with 90% opacity */
+            padding-top: 55px; /* Space for the navbar */
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        
+        #sidebar .list-unstyled.components li {
+            padding-top: 10px; /* Adjust the padding as needed */
+        }
+
+
+        
+        #sidebar.active {
+            left: 0;
+        }
+
+        
+        #sidebarCollapse {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Align to top left corner */
+            cursor: pointer;
+            z-index: 2000;
+            color: white; /* Set the color to white */
+        }
+        .navbar-brand {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .dropdown-item:hover {
+        background-color: #cdd0d4 ; 
+        }
+
+        
+        #sidebarCollapse i {
+            font-size: 24px;
+        }
+
+        .task-bar-buttons {
+                    display: flex;
+                    align-items: center;
+        }
+        .task-bar-buttons button {
+                    margin-left: 10px;
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    border: none;
+                    cursor: pointer;
+        }
+        .task-bar-buttons button:hover {
+                    background-color: #45a049;
+        }
 
 
 
@@ -84,16 +152,46 @@
                 selectedDepartmentPlots[i].style.display = "block";
             }
         }
+        // Sidebar toggle functionality
+        $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+        });
     </script>
 </head>
 <body>
-    <nav>
-        <!-- <a href="{{ url_for('admin_dashboard') }}" class="back-button">
-            <button class="back-button">Back</button>
-        </a> -->
-        <button class="back-button" onclick="window.location.href = '/hr';">Back</button>
-
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- Sidebar toggle button -->
+        <button id="sidebarCollapse" class="btn btn-dark">
+            <i class="fas fa-bars"></i>
+        </button>
+        <!-- Centered title -->
+        <a class="navbar-brand mx-auto">AVP Dashboard</a>
+        <!-- Dropdown menu for user options -->
+        <div class="dropdown ml-auto">
+            <button class="btn btn-dark dropdown-toggle" type="button" id="userDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="far fa-user-circle"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdownMenu">
+                <a class="dropdown-item" href="{{ url_for('change_password_page') }}">Change Password</a>
+                <a class="dropdown-item"  href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
     </nav>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <ul class="list-unstyled components">
+            <li>
+                <a href="{{ url_for('upload_file_avp') }}" class="btn btn-dark btn-block">Promotion Employees</a>
+            </li>
+            <li>
+                <a href="{{ url_for('analyze_AVP') }}" class="btn btn-dark btn-block">Promotion Statistics</a>
+            </li>
+            
+        
+        </ul>
+    </div>
     <h1>Analysis Result</h1>
     
     
@@ -152,5 +250,21 @@
         </ul>
         <!-- You can add more analysis results here -->
     </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Sidebar toggle functionality
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+            });
+        });
+    </script>
+
 </body>
 </html>

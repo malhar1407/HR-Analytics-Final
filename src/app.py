@@ -7,15 +7,17 @@ from Cover_Letter import final_cover_letter
 from datetime import datetime, timedelta
 import pandas as pd
 from io import StringIO
-from Employee_Review import get_plots, analyze_sentiments
+from Employee_Review import get_plots, get_department_wise_plots, analyze_sentiments, get_department_names
 from Employee_Promotion import generate_graphs, Promotion_predictions
 from bson.binary import Binary
 from bson import ObjectId
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-
+from jinja2 import Environment
 import io
 import base64
+import nltk
+nltk.download('wordnet')
 
 def update_user_password(user_id, new_password):
     # MongoDB connection
@@ -61,14 +63,25 @@ def get_user_password(user_id):
     
 # Function to generate a sequential employee ID
 def generate_emp_id():
-    # Fetch the latest employee ID from the database and increment it by 1
-    latest_emp = login_collection.find_one(sort=[("emp_id", -1)])
-    if latest_emp:
-        latest_emp_id = int(latest_emp['emp_id'])
-        new_emp_id = str(latest_emp_id + 1).zfill(5)  # Increment and pad with zeros
-    else:
-        new_emp_id = '00001'  # Initial employee ID if no employees exist yet
+    # Fetch the latest employee ID from both collections and choose the maximum
+    latest_login_emp = login_collection.find_one(sort=[("emp_id", -1)])
+    latest_past_emp = past_employees_collection.find_one(sort=[("emp_id", -1)])
+
+    # Extract the maximum employee ID from both collections
+    max_login_emp_id = int(latest_login_emp['emp_id']) if latest_login_emp else 0
+    max_past_emp_id = int(latest_past_emp['emp_id']) if latest_past_emp else 0
+
+    # Choose the maximum employee ID from both collections
+    max_emp_id = max(max_login_emp_id, max_past_emp_id)
+
+    # Increment the maximum employee ID by 1
+    new_emp_id = str(max_emp_id + 1).zfill(5)  # Increment and pad with zeros
+    
     return new_emp_id
+
+
+
+
 
 def generate_candidate_id():
     # Fetch the latest candidate ID from the database and increment it by 1
@@ -85,6 +98,13 @@ def generate_candidate_id():
 
 
 app = Flask(__name__)
+
+# Define a custom Jinja2 filter to mimic the behavior of enumerate
+def jinja2_enumerate(iterable, start=0):
+    return enumerate(iterable, start=start)
+
+# Add the custom filter to the Jinja2 environment
+app.jinja_env.filters['enumerate'] = jinja2_enumerate
 
 # Set a secret key
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -106,6 +126,7 @@ promotion_upload_date = db['Promotion_Upload_Date'] # To store upload date for t
 rejected_candidate = db['rejected_candidate'] # Collection to store rejected candidates
 
 feedback_collection = db['Feedback']  # Collection to store feedback
+feedback_ans = db['Feedback_answers']
 
 # Route for uploading resumes
 @app.route('/upload', methods=['POST'])
@@ -135,7 +156,7 @@ def upload_files():
 
                 
                 # Parse resume and cover letter, and store information in MongoDB
-                pdf_name, domain, name, contact_info, email, skills, upload_date = parse_resume(resume_file_path)
+                pdf_name, domain, name, contact_info, email, experience_category, skills, upload_date = parse_resume(resume_file_path)
                 cultural_fit = final_cover_letter(cover_letter_file_path)
                 
                 name = name.upper()
@@ -149,6 +170,8 @@ def upload_files():
                     'name': name,
                     'contact_info': contact_info,
                     'email': email,
+                    'domain': domain,
+                    'experience_category': experience_category,
                     'skills': list(skills),
                     'domain': domain,
                     'cultural_fit': cultural_fit,
@@ -280,19 +303,36 @@ def accept_candidate(candidate_id):
     
 
 # Route to reject candidates
-@app.route('/reject_candidate/<candidate_id>')
-def reject_candidate(candidate_id):
-    candidate_id = candidate_id
-    reason = request.args.get('reason')
-    data = {
-        'status': 'Sorry! We have decided not to continue forward with you. We will contact you if a position opens up in the future.',
-        'reason': reason
-    }
-    resume_collection.update_one(
-        {'cand_id': candidate_id},
-        {'$set': data}
-    )
-    return redirect(url_for('hr_dashboard'))
+@app.route('/reject_candidate', methods=['POST'])
+def reject_candidate():
+    if request.method == 'POST':
+        candidate_id = request.json.get('candidateId')
+        reason = request.json.get('reason')
+
+        # Get candidate details from resume_collection
+        candidate_details = resume_collection.find_one({'cand_id': candidate_id})
+
+        if candidate_details:
+            # Insert candidate details into rejected_candidate collection
+            rejected_candidate.insert_one({
+                'cand_id': candidate_id,
+                'reason': reason,
+                # Add other fields as needed
+            })
+
+            # Update candidate status and reason for rejection
+            data = {
+                'status': 'Sorry! We have decided not to continue forward with you. We will contact you if a position opens up in the future.',
+                'reason': reason
+            }
+            resume_collection.update_one(
+                {'cand_id': candidate_id},
+                {'$set': data}
+            )
+
+            return jsonify({'success': True}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Candidate not found'}), 404
         
 
 # Route for candidate login page
@@ -313,6 +353,8 @@ def validate():
             session['emp_id'] = candidate_id
             session['designation'] = login_data.get('designation')
             session['name'] = login_data.get('name')
+            session['department'] = login_data.get('department')
+
     
             
             if session['designation'] == 'HR':
@@ -323,6 +365,8 @@ def validate():
                 return redirect(url_for('admin_dashboard'))
             elif session['designation'] == 'AVP':
                 return redirect(url_for('upload_file_avp'))
+            elif session['designation'] == 'Employee':
+                return redirect(url_for('empfeed'))
         else:
             flash('Invalid Login Credentials. Please try again')
         
@@ -398,25 +442,45 @@ def add_employee():
     if request.method == 'POST':
         # Extract employee details from the form
         name = request.form.get('name')
+        department = request.form.get('department')
         designation = request.form.get('designation')
         email = request.form.get('email')
         phone = request.form.get('phone')
         password = "Admin123@"  # Default password
 
-        # Generate unique employee ID
-        emp_id = generate_emp_id()
-
-        # Insert employee details into MongoDB
-        employee_data = {
-            'emp_id': emp_id,
-            'name': name,
-            'designation': designation,
-            'email': email.lower(),  # Convert email to lowercase
-            'phone': phone,
-            'password': password,
-            'created_at': datetime.now()
-        }
-        login_collection.insert_one(employee_data)
+        # Check if the email matches a past employee
+        past_employee = past_employees_collection.find_one({'email': email.lower()})
+        if past_employee:
+            # Retrieve the past employee's details
+            emp_id = past_employee['emp_id']
+            # You may want to update some details such as name, department, etc.
+            # based on the new input; for now, let's assume we keep the old details
+            # Insert the past employee details into the login_details collection
+            login_collection.insert_one({
+                'emp_id': emp_id,
+                'name': name,
+                'department': department,
+                'designation': designation,
+                'email': email.lower(),
+                'phone': phone,
+                'password': password,
+                'created_at': datetime.now()
+            })
+        else:
+            # Generate unique employee ID
+            emp_id = generate_emp_id()
+            # Insert new employee details into MongoDB
+            employee_data = {
+                'emp_id': emp_id,
+                'name': name,
+                'department': department,
+                'designation': designation,
+                'email': email.lower(),  # Convert email to lowercase
+                'phone': phone,
+                'password': password,
+                'created_at': datetime.now()
+            }
+            login_collection.insert_one(employee_data)
 
         return redirect(url_for('admin_dashboard'))
 
@@ -502,8 +566,14 @@ def back():
 
     if user == 'Candidate':
         return redirect(url_for('candidate_dashboard'))
+    elif user == 'Admin':
+        return redirect(url_for('admin_dashboard'))
     elif user == 'HR':
         return redirect(url_for('hr_dashboard'))
+    elif user == 'Employee':
+        return redirect(url_for('empfeed'))
+    elif user == 'AVP':
+        return redirect(url_for('upload_file_avp'))
 
 # Route for rendering the change password page
 @app.route('/change_password_page', methods=['POST','GET'])
@@ -610,6 +680,30 @@ def save_questions():
         # Redirect the admin back to the admin dashboard
         return redirect(url_for('admin_dashboard'))
     
+# @app.route('/empfeed', methods=['GET', 'POST'])
+# def empfeed():
+#     if request.method == 'POST':
+#         # Handle form submission
+#         feedback = {}
+#         for key, value in request.form.items():
+#             feedback[key] = value
+        
+#         # Add employee ID to the feedback data
+#         feedback['emp_id'] = session.get('emp_id')
+#         feedback['department'] = session.get('department')
+#         print(feedback['department'])
+#         # Save feedback to MongoDB
+#         feedback_ans.insert_one(feedback)
+           
+        
+#         # Optionally, redirect to a thank you page
+#         return render_template('thank_you.html')
+#     else:
+#         # Retrieve questions from MongoDB
+#         questions = feedback_collection.find_one()  # Assuming there's only one document with questions
+        
+#         return render_template('empfeed.html', questions=questions)
+
 @app.route('/empfeed', methods=['GET', 'POST'])
 def empfeed():
     if request.method == 'POST':
@@ -618,8 +712,22 @@ def empfeed():
         for key, value in request.form.items():
             feedback[key] = value
         
+        # Add employee ID to the feedback data
+        feedback['emp_id'] = session.get('emp_id')
+        feedback['department'] = session.get('department')
+        
+        # Convert star ratings to numeric values
+        for key in feedback.keys():
+            if key.startswith('question'):
+                try:
+                    # Try converting the value to an integer
+                    feedback[key] = int(feedback[key])
+                except ValueError:
+                    # If conversion fails, keep the value as string
+                    pass
+        
         # Save feedback to MongoDB
-        feedback_collection.insert_one(feedback)
+        feedback_ans.insert_one(feedback)
         
         # Optionally, redirect to a thank you page
         return render_template('thank_you.html')
@@ -628,10 +736,6 @@ def empfeed():
         questions = feedback_collection.find_one()  # Assuming there's only one document with questions
         
         return render_template('empfeed.html', questions=questions)
-
-def read_csv_file(file):
-    df = pd.read_csv(file, delimiter=',', nrows=70000, encoding='latin1')
-    return df
 
 def convert_encoding_to_utf8(file):
     # Read the content of the file and decode it from Latin1 to UTF-8
@@ -665,22 +769,108 @@ def upload_file():
     
     # If GET request, render the upload.html template
     return render_template('test.html')
+# @app.route('/get_plot_data/<plot_id>')
+# def get_plot_data(plot_id):
+#     try:
+#         plot_data = fetch_plot_data_from_mongodb(plot_id)
+#         return jsonify(plot_data)
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+# @app.route('/get_all_plot_data')
+# def get_all_plot_data():
+#     try:
+#         # Retrieve all plot IDs from MongoDB
+#         plot_ids = [str(plot['_id']) for plot in plots_collection.find({}, {'_id': 1})]
+
+#         # Fetch plot data for each plot ID
+#         plot_data = {plot_id: fetch_plot_data_from_mongodb(plot_id) for plot_id in plot_ids}
+
+#         return jsonify(plot_data)
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
 
 @app.route('/analyze', methods=['POST','GET'])
 def analyze():
-    # Call the analyze_sentiments function from code.py
-    plot_ids = get_plots()
-    positive_reviews, negative_reviews, neutral_reviews= analyze_sentiments()
+    # Retrieve data from MongoDB
+    data = list(feedback_ans.find())
+
+    # Convert JSON data to DataFrame
+    df = pd.DataFrame(data)
+
+    # Preprocess DataFrame
+    # Drop the "_id" column
+    df.drop("_id", axis=1, inplace=True)
+    df.drop("emp_id", axis=1, inplace=True)
+
+    # Rename columns
+    df.rename(columns={'question4': 'summary', 'question1': 'pros', 'question2': 'cons', 'question3': 'advice-to-mgmt', 'question5': 'overall-ratings', 'question6': 'work-balance-stars', 'question7': 'culture-values-stars', 'question8': 'career-opportunities-stars', 'question9': 'comp-benefit-stars', 'question10': 'senior-management-stars' }, inplace=True)
+
+    # Rearrange columns
+    df = df[['summary', 'pros', 'cons', 'advice-to-mgmt', 'overall-ratings', 'work-balance-stars', 'culture-values-stars', 'career-opportunities-stars', 'comp-benefit-stars', 'senior-management-stars', 'department']]
+
+    # Call the analyze_sentiments function
+    positive_reviews, negative_reviews, neutral_reviews = analyze_sentiments(df)
+
+    # Call the get_plots function
+    plot_ids = get_plots(df)
+
+    # Call the get_department_wise_plots function
+    department_names, department_plot_ids = get_department_wise_plots(df, 'department')
 
     # Get plot data from MongoDB
     plots = [get_plot_data(plot_id) for plot_id in plot_ids]
+    department_plots = [[get_plot_data(plot_id) for plot_id in department_plot_set] for department_plot_set in department_plot_ids]
 
     # Render the HTML template with analysis results
     return render_template('test1.html', 
-                           positive_reviews=positive_reviews, 
-                           negative_reviews=negative_reviews, 
-                           neutral_reviews=neutral_reviews,
-                           plots=plots)
+                    positive_reviews=positive_reviews, 
+                    negative_reviews=negative_reviews, 
+                    neutral_reviews=neutral_reviews,
+                    plots=plots,
+                    department_plots=department_plots,
+                    department_names=department_names)  # Pass department names and plots to the template
+
+
+@app.route('/feedback_AVP', methods=['POST','GET'])
+def analyze1():
+    # Retrieve data from MongoDB
+    data = list(feedback_ans.find())
+
+    # Convert JSON data to DataFrame
+    df = pd.DataFrame(data)
+
+    # Preprocess DataFrame
+    # Drop the "_id" column
+    df.drop("_id", axis=1, inplace=True)
+    df.drop("emp_id", axis=1, inplace=True)
+
+    # Rename columns
+    df.rename(columns={'question4': 'summary', 'question1': 'pros', 'question2': 'cons', 'question3': 'advice-to-mgmt', 'question5': 'overall-ratings', 'question6': 'work-balance-stars', 'question7': 'culture-values-stars', 'question8': 'career-opportunities-stars', 'question9': 'comp-benefit-stars', 'question10': 'senior-management-stars' }, inplace=True)
+
+    # Rearrange columns
+    df = df[['summary', 'pros', 'cons', 'advice-to-mgmt', 'overall-ratings', 'work-balance-stars', 'culture-values-stars', 'career-opportunities-stars', 'comp-benefit-stars', 'senior-management-stars', 'department']]
+
+    # Call the analyze_sentiments function
+    positive_reviews, negative_reviews, neutral_reviews = analyze_sentiments(df)
+
+    # Call the get_plots function
+    plot_ids = get_plots(df)
+
+    # Call the get_department_wise_plots function
+    department_names, department_plot_ids = get_department_wise_plots(df, 'department')
+
+    # Get plot data from MongoDB
+    plots = [get_plot_data(plot_id) for plot_id in plot_ids]
+    department_plots = [[get_plot_data(plot_id) for plot_id in department_plot_set] for department_plot_set in department_plot_ids]
+
+    # Render the HTML template with analysis results
+    return render_template('AVP_Feedback.html', 
+                    positive_reviews=positive_reviews, 
+                    negative_reviews=negative_reviews, 
+                    neutral_reviews=neutral_reviews,
+                    plots=plots,
+                    department_plots=department_plots,
+                    department_names=department_names)  # Pass department names and plots to the template
 
 
 def read_csv(file_promotion):
@@ -819,8 +1009,29 @@ def schedule_meeting(candidate_id):
         else:
             flash('Candidate not found')
             return redirect(url_for('hr_dashboard'))
+        
+
+@app.route('/verify_email', methods=['POST'])
+def verify_email():
+    email = request.json.get('email')
+    past_employee = past_employees_collection.find_one({'email': email})
+    if past_employee:
+        return jsonify({'exists': True, 'emp_id': past_employee['emp_id']})
+    else:
+        return jsonify({'exists': False})
+    
+@app.route('/generate_employee_review', methods=['GET', 'POST'])
+def generate_employee_review():
+    # Execute the Python script
+    subprocess.run(["python", "path_to_your_script.py"])
+    return "Employee review generation started."
+
+
 if __name__ == '__main__':
     #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    #streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
+    streamlit_process = subprocess.Popen(["streamlit", "run", "cygi.py", "--server.enableCORS", "false"])
     app.config['UPLOAD_FOLDER'] = r'D:\HR-Analytics-Final\src\uploads'  # Define upload folder path  # Define upload folder path
     print(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
