@@ -747,25 +747,25 @@ def get_plot_data(plot_id):
     plot_base64 = base64.b64encode(plot_data).decode()
     return plot_base64
 
-@app.route('/upload_HR', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'})
+# @app.route('/upload_HR', methods=['GET', 'POST'])
+# def upload_file():
+#     if request.method == 'POST':
+#         if 'file' not in request.files:
+#             return jsonify({'error': 'No file part'})
         
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'})
+#         file = request.files['file']
+#         if file.filename == '':
+#             return jsonify({'error': 'No selected file'})
         
-        if file:
-            try:
-                df = read_csv_file(StringIO(convert_encoding_to_utf8(file)))
-                # Save data to MongoDB
-                records = df.to_dict(orient='records')
-                review_collection.insert_many(records)
-                return jsonify({'message': 'File uploaded successfully'})
-            except Exception as e:
-                return jsonify({'error': str(e)})
+#         if file:
+#             try:
+#                 df = read_csv_file(StringIO(convert_encoding_to_utf8(file)))
+#                 # Save data to MongoDB
+#                 records = df.to_dict(orient='records')
+#                 review_collection.insert_many(records)
+#                 return jsonify({'message': 'File uploaded successfully'})
+#             except Exception as e:
+#                 return jsonify({'error': str(e)})
     
     # If GET request, render the upload.html template
     return render_template('test.html')
