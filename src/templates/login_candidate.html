@@ -14,6 +14,18 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      position: relative;
+    }
+
+    .flash-messages {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      list-style-type: none;
+      padding: 10px;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
     }
 
     .login-container {
@@ -60,21 +72,32 @@
 </head>
 <body>
 
-    <div class="login-container">
-        <h2>Login</h2>
-        <form action="/validate_candidate" method="POST" enctype="multipart/form-data">
-          <label for="candidate-id">Candidate ID:</label><br>
-          <input type="text" id="candidate-id" name="candidate-id" placeholder="Enter candidate ID (e.g., C00001)" pattern="C\d{5}" title="Please enter a valid candidate ID (e.g., C00001)" required><br><br>
-      
-          <label for="password">Password:</label><br>
-          <input type="password" id="password" name="password" placeholder="Enter Password" required><br><br>
-      
-          <input type="submit" value="Login">
-        </form>
-      
-        <!-- Add link to login_candidate.html page -->
-        <p>Are you an employee? <a href="login">Login here</a></p>
-      </div>
+  <div class="login-container">
+    <h2>Login</h2>
+    
+    <form action="/validate_candidate" method="POST" enctype="multipart/form-data">
+      <label for="candidate-id">Candidate ID:</label><br>
+      <input type="text" id="candidate-id" name="candidate-id" placeholder="Enter candidate ID (e.g., C00001)" pattern="C\d{5}" title="Please enter a valid candidate ID (e.g., C00001)" required><br><br>
+
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" name="password" placeholder="Enter Password" required><br><br>
+
+      <!-- Move the flash messages section here -->
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <ul class="flash-messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endwith %}
+
+      <input type="submit" value="Login">
+    </form>
+
+    <p>Are you an employee? <a href="login">Login here</a></p>
+  </div>
 
 </body>
 </html>

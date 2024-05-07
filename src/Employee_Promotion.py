@@ -86,11 +86,13 @@ def plot_graphs(data):
         plots_collection.delete_many({})
     
     # Plot count of awards won
+    custom_colors = ["#e9724d", "#d6d727"]
     awards_won_plot = plt.figure()
-    sns.countplot(data=data, x='awards_won')
+    sns.countplot(data=data, x='awards_won', palette=custom_colors)
     plt.title('Count of Awards Won')
-    plt.xlabel('Awards Won')
+    plt.xlabel('')
     plt.ylabel('Count')
+    plt.xticks(ticks=[0, 1], labels=['Awards not won', 'Awards won'])
     plt.tight_layout()
     awards_won_bytes = io.BytesIO()
     plt.savefig(awards_won_bytes, format='png')
@@ -101,10 +103,11 @@ def plot_graphs(data):
 
     # Plot count of KPIs met
     kpis_met_plot = plt.figure()
-    sns.countplot(data=data, x='KPIs_met')
+    sns.countplot(data=data, x='KPIs_met',palette=custom_colors)
     plt.title('Count of KPIs Met')
-    plt.xlabel('KPIs Met')
+    plt.xlabel('')
     plt.ylabel('Count')
+    plt.xticks(ticks=[0, 1], labels=['KPI not met', 'KPI met'])
     plt.tight_layout()
     kpis_met_bytes = io.BytesIO()
     plt.savefig(kpis_met_bytes, format='png')
@@ -114,11 +117,19 @@ def plot_graphs(data):
     plot_ids['kpis_met'] = str(kpis_met_id)
 
     # Plot count data from binning
-    for column in ['total_score_label', 'service_catg', 'rating_label']:
+    colors = ['#e9724d', '#d6d727', '#92cad1', '#79ccb3', '#868686', '#b33c6a', '#00a2c7', '#f3af42']
+
+    for i, column in enumerate(['total_score_label', 'service_catg', 'rating_label']):
         plot = plt.figure()
-        sns.countplot(data=data, x=column, order=data[column].value_counts().index)
+        sns.countplot(data=data, x=column, order=data[column].value_counts().index, palette = colors)
+        if i == 0:
+            plt.title('Categories of Training Score')
+        elif i == 1:
+            plt.title('Length of Service Categories')
+        elif i == 2:
+            plt.title('Previous Year Ratings')
         plt.ylabel('Count')
-        plt.xlabel(column.replace('_', ' '))
+        plt.xlabel('')
         plt.tight_layout()
         plot_bytes = io.BytesIO()
         plt.savefig(plot_bytes, format='png')
@@ -127,11 +138,12 @@ def plot_graphs(data):
         column_id = plots_collection.insert_one({'image': plot_bytes.getvalue()}).inserted_id
         plot_ids[column] = str(column_id)
 
+
     # Plot department-wise promotion
     department_plot = plt.figure()
-    sns.set_style('whitegrid')
-    data.department.value_counts().plot.bar(color='#ff9933', align='edge')
-    plt.title('Department-wise Employees')
+    #sns.set_style('whitegrid')
+    data.department.value_counts().plot.bar(color=colors, align='edge')
+    plt.title('Department-wise Counts')
     plt.ylabel('Number of Employees')
     plt.xlabel('Department')
     plt.tight_layout()

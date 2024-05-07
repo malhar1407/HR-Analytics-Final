@@ -56,22 +56,44 @@
     input[type="submit"]:hover {
       background-color: #45a049;
     }
+
+    .flash-messages {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      list-style-type: none;
+      padding: 10px;
+      background-color: #f44336;
+      color: white;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
 
   <div class="login-container">
     <h2>Login</h2>
+    <!-- Add this section to display flash messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="flash-messages">
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
     <form action="/validate" method="POST" enctype="multipart/form-data">
       <label for="candidate-id">Employee ID:</label><br>
       <input type="text" id="candidate-id" name="candidate-id" placeholder="Enter ID (5 digits)" pattern="[0-9]{5}" required><br><br>
-  
+
       <label for="password">Password:</label><br>
       <input type="password" id="password" name="password" placeholder="Enter Password" required><br><br>
-  
+
       <input type="submit" value="Login">
     </form>
-  
+
     <p>Are you a candidate? <a href="login_candidate">Login here</a></p>
   </div>
 
