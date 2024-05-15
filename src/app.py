@@ -768,7 +768,7 @@ def get_plot_data(plot_id):
 #                 return jsonify({'error': str(e)})
     
     # If GET request, render the upload.html template
-    return render_template('test.html')
+    # return render_template('test.html')
 # @app.route('/get_plot_data/<plot_id>')
 # def get_plot_data(plot_id):
 #     try:
