@@ -50,5 +50,14 @@ Follow these steps to set up the project on your local machine:
 
 ## Documentation
 
-For more detailed information, please refer to the [Project Documentation](path/to/yourfile.pdf).
+For more detailed information, please refer to the [Project Documentation](https://github.com/malhar1407/HR-Analytics-Final/blob/main/AI-Enabled%20HR-Analytics.pdf).
+
+
+## Acknowledgments
+
+We express our gratitude to Komal Lamba for her exceptional guidance, patience, and expertise during the internship, significantly enhancing the quality and relevance of this project. Her practical industry insights have been particularly enlightening.
+
+We also thank Bhoomi Mehta, Manas Jani, and Keyur Shah for their invaluable contributions, which have been indispensable to the development of this project.
+
+This project was created by Kahan Jash, Malhar Shinde, and Parth Parikh.
 
