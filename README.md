@@ -50,7 +50,8 @@ Follow these steps to set up the project on your local machine:
 
 ## Documentation
 
-For more detailed information, please refer to the [Project Documentation](https://github.com/malhar1407/HR-Analytics-Final/blob/main/AI-Enabled%20HR-Analytics.pdf).
+For more detailed information, please refer to the [Project Documentation](https://github.com/malhar1407/HR-Analytics-Final/blob/main/AI-Enabled%20HR%20Analytics.pdf).
+For the presentation, please refer to the [Presentation](https://github.com/malhar1407/HR-Analytics-Final/blob/main/cygnet_ppt.pdf).
 
 
 ## Acknowledgments
